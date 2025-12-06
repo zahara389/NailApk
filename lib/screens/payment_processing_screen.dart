@@ -47,7 +47,7 @@ class PaymentProcessingScreen extends StatelessWidget {
         {'label': 'Nomor VA', 'value': '8203 0812 3456 7890', 'type': 'copy'},
         {'label': 'Nama Akun', 'value': 'Nail Studio Payment', 'type': 'text'},
       ];
-      iconContent = Icon(LucideIcons.creditCard, size: 36, color: customPink);
+      iconContent = Icon(Icons.credit_card, size: 36, color: customPink);
     }
 
     final dueDate = DateTime.now().add(const Duration(hours: 24));
@@ -56,7 +56,10 @@ class PaymentProcessingScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: goBack),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: goBack,
+        ),
         title: const Text('Tagihan Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
       ),
@@ -75,7 +78,7 @@ class PaymentProcessingScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Icon(LucideIcons.clock, size: 36, color: customPink),
+                  Icon(Icons.access_time, size: 36, color: customPink),
                   const SizedBox(height: 12),
                   const Text('Menunggu Pembayaran', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),

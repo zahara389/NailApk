@@ -27,7 +27,10 @@ class AllProductsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: goBack),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: goBack,
+        ),
         title: Text('Semua Produk (${newArrivals.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: false,
       ),

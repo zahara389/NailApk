@@ -12,6 +12,7 @@ import 'screens/login_screen.dart';
 import 'screens/order_success_screen.dart';
 import 'screens/payment_processing_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/product_detail_screen.dart';
 
 // Components & Config
 import 'config.dart';
@@ -87,7 +88,7 @@ class _AppRouterState extends State<AppRouter> {
 
       if (view == 'PDP' && data is Product) {
         _selectedProduct = data;
-      } else {
+      } else if (view != 'PDP') {
         _selectedProduct = null;
       }
     });
@@ -168,6 +169,14 @@ class _AppRouterState extends State<AppRouter> {
           currentView: _currentView,
         );
       case 'PDP':
+        // Tambahkan pengecekan null safety
+        if (_selectedProduct == null) {
+          // Jika produk tidak ada, kembali ke Home
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            navigate('Home');
+          });
+          return const Center(child: CircularProgressIndicator());
+        }
         return ProductDetailScreen(
           goBack: goBack,
           navigate: navigate,

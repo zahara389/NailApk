@@ -48,7 +48,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: widget.goBack),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.goBack,
+        ),
         actions: [
           InkWell(
             onTap: () => widget.navigate('Cart'),
@@ -57,7 +60,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const Icon(LucideIcons.shoppingBag),
+                  const Icon(Icons.shopping_bag_outlined),
                   if (widget.cartCount > 0)
                     Positioned(
                       top: 4,
@@ -100,7 +103,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       widget.product.imageUrl,
                       height: 250,
                       fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Center(child: Text('Product Image')),
+                      errorBuilder: (context, error, stackTrace) => const Center(
+                        child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
+                      ),
                     ),
                   ),
                 ),
@@ -124,7 +129,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           const SizedBox(width: 8),
                           Text(formatRupiah(priceOriginal), style: TextStyle(fontSize: 18, color: Colors.grey.shade400, decoration: TextDecoration.lineThrough)),
                           const SizedBox(width: 8),
-                          const Text('${(20)}% OFF', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
+                          const Text('20% OFF', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -157,7 +162,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         padding: const EdgeInsets.only(left: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                          children: const [
                             _DetailBullet(text: 'Vegan & Cruelty-Free'),
                             _DetailBullet(text: 'Perlu Lampu UV/LED'),
                             _DetailBullet(text: 'Dibuat di USA'),
@@ -192,10 +197,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
-                        LucideIcons.heart,
+                        _isFavorite ? Icons.favorite : Icons.favorite_border,
                         size: 24,
                         color: _isFavorite ? customPink : Colors.grey.shade600,
-                        fill: _isFavorite ? customPink : Colors.transparent,
                       ),
                     ),
                   ),

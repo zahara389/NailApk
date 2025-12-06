@@ -37,7 +37,10 @@ class ShoppingCartScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: goBack),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: goBack,
+        ),
         title: const Text('Shopping Cart', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
@@ -46,7 +49,7 @@ class ShoppingCartScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(LucideIcons.shoppingBag, size: 48, color: Colors.grey.shade400),
+                  Icon(Icons.shopping_bag_outlined, size: 48, color: Colors.grey.shade400),
                   const SizedBox(height: 16),
                   Text('Keranjang belanja Anda kosong.', style: TextStyle(color: Colors.grey.shade500)),
                   TextButton(
@@ -169,7 +172,12 @@ class _CartItem extends StatelessWidget {
             child: Image.network(
               item.product.imageUrl,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => Center(child: Text(item.product.name.substring(0, 4))),
+              errorBuilder: (context, error, stackTrace) => Center(
+                child: Text(
+                  item.product.name.length >= 4 ? item.product.name.substring(0, 4) : item.product.name,
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -192,7 +200,7 @@ class _CartItem extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () => handleRemoveItem(item.product.id),
-                      child: const Icon(LucideIcons.x, size: 16, color: Colors.grey),
+                      child: const Icon(Icons.close, size: 16, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -207,12 +215,13 @@ class _CartItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           InkWell(
                             onTap: () => updateCartQuantity(item.product.id, -1),
                             child: const Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Icon(LucideIcons.minus, size: 16),
+                              child: Icon(Icons.remove, size: 16),
                             ),
                           ),
                           Padding(
@@ -223,7 +232,7 @@ class _CartItem extends StatelessWidget {
                             onTap: () => updateCartQuantity(item.product.id, 1),
                             child: const Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Icon(LucideIcons.plus, size: 16),
+                              child: Icon(Icons.add, size: 16),
                             ),
                           ),
                         ],

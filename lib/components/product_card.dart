@@ -39,6 +39,7 @@ class ProductCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min, // Tambahkan ini
           children: [
             // Area Gambar
             Stack(
@@ -54,20 +55,37 @@ class ProductCard extends StatelessWidget {
                   child: Image.network(
                     product.imageUrl,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Center(child: Text('Image Error')),
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: Icon(Icons.broken_image, color: Colors.grey),
+                    ),
                   ),
                 ),
                 // Badge Limited Edition
                 if (product.isLimited)
-                  const Positioned(
+                  Positioned(
                     top: 8,
                     left: 8,
-                    child: Chip(
-                      label: Text('LIMITED EDITION', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
-                      labelPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                      padding: EdgeInsets.zero,
-                      backgroundColor: Colors.white,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        'LIMITED EDITION',
+                        style: TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ),
                   ),
                 // Ikon Favorit
@@ -90,10 +108,9 @@ class ProductCard extends StatelessWidget {
                         ],
                       ),
                       child: Icon(
-                        LucideIcons.heart,
+                        product.isFavorite ? Icons.favorite : Icons.favorite_border,
                         size: 16,
                         color: product.isFavorite ? customPink : Colors.grey.shade400,
-                        fill: product.isFavorite ? customPink : Colors.transparent,
                       ),
                     ),
                   ),
@@ -105,11 +122,15 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(product.brand, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  Text(
+                    product.brand,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
                   const SizedBox(height: 4),
                   SizedBox(
-                    height: 30, // Ketinggian tetap untuk nama
+                    height: 34, // Sesuaikan tinggi untuk 2 baris
                     child: Text(
                       product.name,
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
@@ -121,10 +142,14 @@ class ProductCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        formatRupiah(product.price),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: Text(
+                          formatRupiah(product.price),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       InkWell(
                         onTap: () => handleAddToCart(product),
                         child: Container(
@@ -133,7 +158,7 @@ class ProductCard extends StatelessWidget {
                             color: customPink,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(LucideIcons.plus, size: 16, color: Colors.white),
+                          child: const Icon(Icons.add, size: 16, color: Colors.white),
                         ),
                       ),
                     ],

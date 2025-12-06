@@ -62,7 +62,7 @@ class _AccountScreenState extends State<AccountScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(LucideIcons.user, size: 60, color: Colors.grey.shade400),
+                Icon(Icons.person_outline, size: 60, color: Colors.grey.shade400),
                 const SizedBox(height: 16),
                 const Text('Anda Belum Login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
@@ -86,120 +86,119 @@ class _AccountScreenState extends State<AccountScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: widget.goBack),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.goBack,
+        ),
         title: const Text('Akun Saya', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 120),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Profile Header
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Icon(LucideIcons.user, size: 48, color: customPink),
-                        const SizedBox(height: 8),
-                        Text(_profileData.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text('sarah.nail@mail.com', style: TextStyle(color: Colors.grey.shade500)),
-                      ],
-                    ),
-                  ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 120),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Profile Header
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.person, size: 48, color: customPink),
+                    const SizedBox(height: 8),
+                    Text(_profileData.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text('sarah.nail@mail.com', style: TextStyle(color: Colors.grey.shade500)),
+                  ],
                 ),
-                const SizedBox(height: 24),
-
-                // Edit Profile / Profile Details
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Detail Profil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          InkWell(
-                            onTap: () => setState(() => _isEditMode = !_isEditMode),
-                            child: Text(_isEditMode ? 'Cancel' : 'Edit Profil', style: TextStyle(color: customPink, fontWeight: FontWeight.w600)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _isEditMode ? _ProfileEditor(
-                        profileData: _profileData,
-                        onUpdate: (newData) => _profileData = newData,
-                      ) : _ProfileDetails(profileData: _profileData),
-                      if (_isEditMode)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16.0),
-                          child: ElevatedButton(
-                            onPressed: _handleSaveProfile,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: customPink,
-                              minimumSize: const Size(double.infinity, 40),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Riwayat Pembelian
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Riwayat Pembelian & Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 12),
-                      ...dummyPurchaseHistory.map((order) => _PurchaseItem(order: order)),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () => print('Lihat Semua Riwayat'),
-                        child: Text('Lihat Semua Riwayat', style: TextStyle(color: customPink, decoration: TextDecoration.underline)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Tombol Logout
-                OutlinedButton.icon(
-                  onPressed: _handleLogout,
-                  icon: const Icon(LucideIcons.x, size: 20, color: Colors.red),
-                  label: const Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 56),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    side: const BorderSide(color: Colors.red),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+
+            // Edit Profile / Profile Details
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Detail Profil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      InkWell(
+                        onTap: () => setState(() => _isEditMode = !_isEditMode),
+                        child: Text(_isEditMode ? 'Cancel' : 'Edit Profil', style: TextStyle(color: customPink, fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _isEditMode ? _ProfileEditor(
+                    profileData: _profileData,
+                    onUpdate: (newData) => setState(() => _profileData = newData),
+                  ) : _ProfileDetails(profileData: _profileData),
+                  if (_isEditMode)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: ElevatedButton(
+                        onPressed: _handleSaveProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: customPink,
+                          minimumSize: const Size(double.infinity, 40),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Riwayat Pembelian
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Riwayat Pembelian & Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  ...dummyPurchaseHistory.map((order) => _PurchaseItem(order: order)),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => print('Lihat Semua Riwayat'),
+                    child: Text('Lihat Semua Riwayat', style: TextStyle(color: customPink, decoration: TextDecoration.underline)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Tombol Logout
+            OutlinedButton.icon(
+              onPressed: _handleLogout,
+              icon: const Icon(Icons.logout, size: 20, color: Colors.red),
+              label: const Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 56),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                side: const BorderSide(color: Colors.red),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -354,19 +353,19 @@ class _PurchaseItem extends StatelessWidget {
     Color statusColor;
     switch (order.status) {
       case 'Delivered':
-        statusIcon = LucideIcons.checkCircle;
+        statusIcon = Icons.check_circle;
         statusColor = Colors.green.shade600;
         break;
       case 'Shipped':
-        statusIcon = LucideIcons.mapPin;
+        statusIcon = Icons.local_shipping;
         statusColor = Colors.blue.shade600;
         break;
       case 'Processing':
-        statusIcon = LucideIcons.clock;
+        statusIcon = Icons.access_time;
         statusColor = Colors.orange.shade600;
         break;
       default:
-        statusIcon = LucideIcons.x;
+        statusIcon = Icons.close;
         statusColor = Colors.grey.shade500;
     }
 
@@ -375,17 +374,21 @@ class _PurchaseItem extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${order.id} (${order.items} items)', style: const TextStyle(fontWeight: FontWeight.w600)),
-              Text(order.date, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${order.id} (${order.items} items)', style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(order.date, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(statusIcon, size: 14, color: statusColor),
                   const SizedBox(width: 4),

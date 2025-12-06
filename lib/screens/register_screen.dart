@@ -45,7 +45,10 @@ class RegisterScreen extends StatelessWidget {
           CustomScrollView(
             slivers: [
               SliverAppBar(
-                leading: BackButtonIcon(onBack: goBack),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: goBack,
+                ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 pinned: false,
@@ -117,7 +120,7 @@ class RegisterScreen extends StatelessWidget {
                         children: [
                           Text('Sign up', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
                           SizedBox(width: 8),
-                          Icon(LucideIcons.chevronRight, size: 20, color: Colors.white),
+                          Icon(Icons.chevron_right, size: 20, color: Colors.white),
                         ],
                       ),
                     ),

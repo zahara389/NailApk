@@ -82,7 +82,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: widget.goBack),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.goBack,
+        ),
         title: const Text('Checkout', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
@@ -96,7 +99,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 // 5.1 Shipping Information
                 _SectionHeader(
                   title: 'Shipping Information',
-                  icon: LucideIcons.mapPin,
+                  icon: Icons.location_on,
                   trailing: _isShippingEdit ? 'Cancel' : 'Change',
                   onTrailingTap: () => setState(() => _isShippingEdit = !_isShippingEdit),
                 ),
@@ -111,7 +114,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 // 5.2 Payment Method
                 _SectionHeader(
                   title: 'Payment Method',
-                  icon: LucideIcons.creditCard,
+                  icon: Icons.credit_card,
                   trailing: 'Add new',
                   onTrailingTap: () => print('Tambah Kartu'),
                 ),
