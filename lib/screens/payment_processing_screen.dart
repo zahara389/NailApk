@@ -4,50 +4,82 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
 import '../components/helper_widgets.dart';
 
-class PaymentProcessingScreen extends StatelessWidget {
+class PaymentProcessingScreen extends StatefulWidget {
   final VoidCallback goBack;
   final Function(String, {dynamic data}) navigate;
   final PaymentDetails? paymentDetails;
-  final List<CartItem> cart; // Dipertahankan, meskipun tidak digunakan di sini
+  final Function(PurchaseHistory) addPurchaseToHistory;
 
   const PaymentProcessingScreen({
     super.key,
     required this.goBack,
     required this.navigate,
     required this.paymentDetails,
-    required this.cart,
+    required this.addPurchaseToHistory,
   });
 
   @override
+  State<PaymentProcessingScreen> createState() => _PaymentProcessingScreenState();
+}
+
+class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
+  // State lokal untuk konfirmasi copy
+  bool _copied = false;
+
+  void _handleSuccessConfirmation() {
+    if (widget.paymentDetails?.newOrder != null) {
+      final finalOrder = widget.paymentDetails!.newOrder.copyWith(status: 'Processing');
+      widget.addPurchaseToHistory(finalOrder);
+    }
+    widget.navigate('OrderSuccess');
+  }
+
+  void _copyToClipboard(String value) {
+    Clipboard.setData(ClipboardData(text: value));
+    setState(() {
+      _copied = true;
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _copied = false;
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (paymentDetails == null) {
+    if (widget.paymentDetails == null) {
       return const Scaffold(body: Center(child: Text('Detail pembayaran tidak tersedia.')));
     }
 
-    final methodKey = paymentDetails!.methodKey;
-    final totalAmount = paymentDetails!.totalAmount;
+    final details = widget.paymentDetails!;
+    final methodKey = details.methodKey;
+    final totalAmount = details.totalAmount;
 
     List<Map<String, dynamic>> paymentData = [];
     Widget iconContent = const SizedBox.shrink();
 
     if (methodKey == 'QRIS') {
       paymentData = [
-        {'label': 'Instruksi', 'value': 'Pindai kode QRIS di bawah.', 'type': 'text'},
-        {'label': 'Kode Referensi', 'value': 'QR-99008877', 'type': 'copy'},
+        {'label': 'Instruksi', 'value': 'Pindai kode QRIS di bawah.', 'isCopyable': false},
+        {'label': 'Kode Referensi', 'value': 'QR-99008877', 'isCopyable': true},
       ];
       iconContent = Image.network(
         "https://placehold.co/150x150/ffffff/000000?text=QRIS+CODE",
         width: 150,
         height: 150,
         fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const SizedBox(width: 150, height: 150, child: Center(child: Text('QRIS Code'))),
       );
     } else if (methodKey == 'Visa') {
       paymentData = [
-        {'label': 'Bank Tujuan', 'value': 'BCA (Virtual Account)', 'type': 'text'},
-        {'label': 'Nomor VA', 'value': '8203 0812 3456 7890', 'type': 'copy'},
-        {'label': 'Nama Akun', 'value': 'Nail Studio Payment', 'type': 'text'},
+        {'label': 'Bank Tujuan', 'value': 'BCA (Virtual Account)', 'isCopyable': false},
+        {'label': 'Nomor VA', 'value': '8203 0812 3456 7890', 'isCopyable': true},
+        {'label': 'Nama Akun', 'value': 'Nail Studio Payment', 'isCopyable': false},
       ];
-      iconContent = Icon(Icons.credit_card, size: 36, color: customPink);
+      iconContent = Icon(LucideIcons.creditCard, size: 36, color: customPink);
     }
 
     final dueDate = DateTime.now().add(const Duration(hours: 24));
@@ -56,10 +88,7 @@ class PaymentProcessingScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: goBack,
-        ),
+        leading: BackButtonIcon(onBack: widget.goBack),
         title: const Text('Tagihan Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
       ),
@@ -78,7 +107,7 @@ class PaymentProcessingScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Icon(Icons.access_time, size: 36, color: customPink),
+                  Icon(LucideIcons.clock, size: 36, color: customPink),
                   const SizedBox(height: 12),
                   const Text('Menunggu Pembayaran', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
@@ -88,12 +117,14 @@ class PaymentProcessingScreen extends StatelessWidget {
                     '${dueDate.day}/${dueDate.month}/${dueDate.year} | $dueTime WIB',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.red),
                   ),
+                  const SizedBox(height: 8),
+                  Text('No. Order: ${details.newOrder.id}', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // Detail Pembayaran
+            // Detail Pembayaran Dinamis
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -109,9 +140,12 @@ class PaymentProcessingScreen extends StatelessWidget {
                   Center(child: iconContent),
                   const SizedBox(height: 16),
                   ...paymentData.map((data) => _DetailRow(
+                        key: ValueKey(data['value']), 
                         label: data['label'] as String,
                         value: data['value'] as String,
-                        isCopyable: data['type'] == 'copy',
+                        isCopyable: data['isCopyable'] as bool,
+                        onCopy: _copyToClipboard,
+                        copied: _copied,
                       )),
                   const Divider(height: 20),
                   Row(
@@ -128,7 +162,7 @@ class PaymentProcessingScreen extends StatelessWidget {
 
             // Tombol Simulasi Konfirmasi
             ElevatedButton(
-              onPressed: () => navigate('OrderSuccess'),
+              onPressed: _handleSuccessConfirmation,
               style: ElevatedButton.styleFrom(
                 backgroundColor: customPink,
                 minimumSize: const Size(double.infinity, 56),
@@ -147,15 +181,22 @@ class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
   final bool isCopyable;
+  final Function(String) onCopy;
+  final bool copied;
 
   const _DetailRow({
+    super.key,
     required this.label,
     required this.value,
     this.isCopyable = false,
+    required this.onCopy,
+    required this.copied,
   });
 
   @override
   Widget build(BuildContext context) {
+    final showCopied = copied && isCopyable;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -167,13 +208,18 @@ class _DetailRow extends StatelessWidget {
               Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
               if (isCopyable)
                 InkWell(
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: value));
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label dicopy!')));
-                  },
+                  onTap: () => onCopy(value),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
-                    child: Text('Copy', style: TextStyle(color: customPink, fontSize: 12, decoration: TextDecoration.underline, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      showCopied ? 'Copied!' : 'Copy',
+                      style: TextStyle(
+                        color: showCopied ? Colors.green : customPink,
+                        fontSize: 12,
+                        decoration: TextDecoration.underline,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
             ],

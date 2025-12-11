@@ -8,6 +8,8 @@ class CheckoutScreen extends StatefulWidget {
   final Function(String, {dynamic data}) navigate;
   final List<CartItem> cart;
   final Function(PaymentDetails) setPaymentDetails;
+  final Function(PurchaseHistory) addPurchaseToHistory;
+  final Address initialAddress;
 
   const CheckoutScreen({
     super.key,
@@ -15,6 +17,8 @@ class CheckoutScreen extends StatefulWidget {
     required this.navigate,
     required this.cart,
     required this.setPaymentDetails,
+    required this.addPurchaseToHistory,
+    required this.initialAddress,
   });
 
   @override
@@ -24,54 +28,70 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _isShippingEdit = false;
   String _selectedPayment = 'Visa';
-  String _selectedShipping = 'JNE';
+  String _selectedShipping = availableLocations.first.key;
 
-  // Data Alamat (Menggunakan Address Model)
-  Address _shippingAddress = Address(
-    name: 'Sarah',
-    phone: '0812-3456-7890',
-    address: 'Jl. Bojongsoang No. 10, Kecamatan Bojongsoang, Kab. Bandung, 40288',
-  );
+  late Address _shippingAddress;
 
-  // Data Metode Pembayaran
+  @override
+  void initState() {
+    super.initState();
+    _shippingAddress = widget.initialAddress.copyWith(); 
+  }
+
   final List<Map<String, String>> paymentMethods = const [
     {'key': 'Visa', 'label': 'Kartu Kredit/Debit (Visa **** 1234)', 'icon': 'VISA'},
     {'key': 'QRIS', 'label': 'QRIS (Gopay/Dana/LinkAja)', 'icon': 'QRIS'},
     {'key': 'COD', 'label': 'COD (Bayar di Tempat)', 'icon': 'COD'},
   ];
 
-  // Data Metode Pengiriman
-  final List<Map<String, dynamic>> shippingOptions = const [
-    {'key': 'JNE', 'method': 'JNE Reguler', 'cost': 20000, 'duration': 'Est. 3-5 hari'},
-    {'key': 'SiCepat', 'method': 'SiCepat BEST', 'cost': 25000, 'duration': 'Est. 2-3 hari'},
-    {'key': 'Grab', 'method': 'GrabExpress Sameday', 'cost': 35000, 'duration': 'Est. Hari ini'},
-  ];
+  final List<Location> locationOptions = availableLocations; 
 
   int _calculateSubtotal() {
     return widget.cart.fold(0, (sum, item) => sum + item.product.price * item.quantity);
   }
 
   int _calculateShippingCost(int subtotal) {
-    final selectedOption = shippingOptions.firstWhere((o) => o['key'] == _selectedShipping);
-    final selectedShippingCost = selectedOption['cost'] as int;
-    return subtotal > 500000 ? 0 : selectedShippingCost;
+    const fixedCost = 20000;
+    return subtotal > 500000 ? 0 : fixedCost;
   }
 
-  void _handlePlaceOrder(int total) {
-    final paymentInfo = PaymentDetails(
-      methodKey: _selectedPayment,
-      totalAmount: total,
-      shippingMethod: _selectedShipping,
-      shippingAddress: _shippingAddress,
+  void _handlePlaceOrder() {
+    final subtotal = _calculateSubtotal();
+    final shipping = _calculateShippingCost(subtotal);
+    final total = subtotal + shipping;
+    
+    // 1. Buat objek order baru
+    final newOrder = PurchaseHistory(
+      id: 'ORD${(DateTime.now().millisecondsSinceEpoch % 100000).toString().padLeft(5, '0')}',
+      date: DateTime.now().toIso8601String().split('T')[0],
+      total: total,
+      status: _selectedPayment == 'COD' ? 'Processing' : 'Awaiting Payment',
+      items: widget.cart.fold(0, (sum, item) => sum + item.quantity),
     );
 
-    widget.setPaymentDetails(paymentInfo);
-
+    // 2. Finalisasi Order (tergantung metode pembayaran)
     if (_selectedPayment == 'COD') {
+      widget.addPurchaseToHistory(newOrder);
       widget.navigate('OrderSuccess');
     } else {
+      final paymentInfo = PaymentDetails(
+        methodKey: _selectedPayment,
+        totalAmount: total,
+        shippingMethod: _selectedShipping,
+        shippingAddress: _shippingAddress,
+        newOrder: newOrder,
+      );
+      widget.setPaymentDetails(paymentInfo);
       widget.navigate('PaymentProcessing');
     }
+  }
+
+  void _handleAddressChange(Address newAddress) {
+    _shippingAddress = newAddress;
+  }
+
+  void _handleAddressSave() {
+    setState(() => _isShippingEdit = false);
   }
 
   @override
@@ -82,10 +102,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: widget.goBack,
-        ),
+        leading: BackButtonIcon(onBack: widget.goBack),
         title: const Text('Checkout', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
@@ -99,22 +116,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 // 5.1 Shipping Information
                 _SectionHeader(
                   title: 'Shipping Information',
-                  icon: Icons.location_on,
+                  icon: LucideIcons.mapPin,
                   trailing: _isShippingEdit ? 'Cancel' : 'Change',
                   onTrailingTap: () => setState(() => _isShippingEdit = !_isShippingEdit),
                 ),
                 const SizedBox(height: 12),
                 _isShippingEdit ? _AddressEditor(
                   address: _shippingAddress,
-                  onAddressChange: (newAddress) => setState(() => _shippingAddress = newAddress),
-                  onSave: () => setState(() => _isShippingEdit = false),
+                  onAddressChange: _handleAddressChange,
+                  onSave: _handleAddressSave,
                 ) : _AddressDisplay(address: _shippingAddress),
                 const SizedBox(height: 24),
 
                 // 5.2 Payment Method
                 _SectionHeader(
                   title: 'Payment Method',
-                  icon: Icons.credit_card,
+                  icon: LucideIcons.creditCard,
                   trailing: 'Add new',
                   onTrailingTap: () => print('Tambah Kartu'),
                 ),
@@ -122,6 +139,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ...paymentMethods.map((method) => Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: PaymentOption(
+                        key: ValueKey(method['key']),
                         icon: method['icon']!,
                         label: method['label']!,
                         isSelected: _selectedPayment == method['key'],
@@ -130,23 +148,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     )),
                 const SizedBox(height: 24),
 
-                // 5.3 Shipping Method
+                // 5.3 Shipping Method (Menggunakan lokasi sebagai simulasi pilihan)
                 const Text('Shipping Method', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-                ...shippingOptions.map((option) => Padding(
+                ...locationOptions.map((option) => Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: ShippingOption(
-                        method: option['method'] as String,
-                        cost: option['cost'] as int,
-                        duration: option['duration'] as String,
-                        selected: _selectedShipping == option['key'],
-                        onSelect: () => setState(() => _selectedShipping = option['key'] as String),
+                        key: ValueKey(option.key),
+                        method: 'Reguler (${option.name.split('(').first.trim()})',
+                        cost: shipping, 
+                        duration: 'Est. 3-5 hari',
+                        selected: _selectedShipping == option.key,
+                        onSelect: () => setState(() => _selectedShipping = option.key),
+                        formatRupiah: formatRupiah,
                       ),
                     )),
+                const SizedBox(height: 24),
+                // Total Review
+                _TotalReview(subtotal: subtotal, shipping: shipping, total: total),
               ],
             ),
           ),
-          // Total dan Tombol Place Order
+          // Total dan Tombol Place Order (Fixed Bottom)
           Positioned(
             bottom: 0,
             left: 0,
@@ -168,7 +191,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: () => _handlePlaceOrder(total),
+                    onPressed: _handlePlaceOrder,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: customPink,
                       minimumSize: const Size(double.infinity, 56),
@@ -204,7 +227,13 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Row(
+          children: [
+            Icon(icon, size: 20, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
         InkWell(
           onTap: onTrailingTap,
           child: Text(trailing, style: TextStyle(color: customPink, fontSize: 14)),
@@ -260,6 +289,7 @@ class _AddressEditorState extends State<_AddressEditor> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _addressController;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -267,6 +297,11 @@ class _AddressEditorState extends State<_AddressEditor> {
     _nameController = TextEditingController(text: widget.address.name);
     _phoneController = TextEditingController(text: widget.address.phone);
     _addressController = TextEditingController(text: widget.address.address);
+
+    // Listener untuk memperbarui address saat diketik
+    _nameController.addListener(_updateAddress);
+    _phoneController.addListener(_updateAddress);
+    _addressController.addListener(_updateAddress);
   }
 
   @override
@@ -278,52 +313,135 @@ class _AddressEditorState extends State<_AddressEditor> {
   }
 
   void _updateAddress() {
-    widget.onAddressChange(widget.address.copyWith(
+    final newAddress = Address(
       name: _nameController.text,
       phone: _phoneController.text,
       address: _addressController.text,
-    ));
+      email: widget.address.email,
+    );
+    widget.onAddressChange(newAddress);
   }
+
+  void _handleSave() {
+    if (_formKey.currentState!.validate()) {
+      _updateAddress();
+      widget.onSave();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(hintText: 'Nama Penerima', contentPadding: EdgeInsets.all(8), border: OutlineInputBorder()),
+              validator: (val) => val!.isEmpty ? 'Nama tidak boleh kosong' : null,
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(hintText: 'No. Telepon', contentPadding: EdgeInsets.all(8), border: OutlineInputBorder()),
+              validator: (val) => val!.isEmpty ? 'Telepon tidak boleh kosong' : null,
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _addressController,
+              maxLines: 3,
+              decoration: const InputDecoration(hintText: 'Alamat Lengkap', contentPadding: EdgeInsets.all(8), border: OutlineInputBorder()),
+              validator: (val) => val!.isEmpty ? 'Alamat tidak boleh kosong' : null,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _handleSave,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: customPink,
+                minimumSize: const Size(double.infinity, 40),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Simpan Alamat', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TotalReview extends StatelessWidget {
+  final int subtotal;
+  final int shipping;
+  final int total;
+
+  const _TotalReview({
+    required this.subtotal,
+    required this.shipping,
+    required this.total,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
         children: [
-          TextFormField(
-            controller: _nameController,
-            onChanged: (value) => _updateAddress(),
-            decoration: const InputDecoration(hintText: 'Nama Penerima', contentPadding: EdgeInsets.all(8), border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: _phoneController,
-            onChanged: (value) => _updateAddress(),
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(hintText: 'No. Telepon', contentPadding: EdgeInsets.all(8), border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: _addressController,
-            onChanged: (value) => _updateAddress(),
-            maxLines: 3,
-            decoration: const InputDecoration(hintText: 'Alamat Lengkap', contentPadding: EdgeInsets.all(8), border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: widget.onSave,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: customPink,
-              minimumSize: const Size(double.infinity, 40),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          _SummaryRow(label: 'Subtotal', value: formatRupiah(subtotal)),
+          _SummaryRow(label: 'Shipping', value: shipping == 0 ? 'Gratis' : formatRupiah(shipping)),
+          const Divider(height: 16, color: Colors.grey),
+          _SummaryRow(label: 'Total', value: formatRupiah(total), isTotal: true),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isTotal;
+
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.isTotal = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 14,
+              fontWeight: isTotal ? FontWeight.w800 : FontWeight.normal,
+              color: isTotal ? Colors.black : Colors.grey.shade700,
             ),
-            child: const Text('Simpan Alamat', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 14,
+              fontWeight: isTotal ? FontWeight.w800 : FontWeight.w500,
+              color: isTotal ? customPink : Colors.black,
+            ),
           ),
         ],
       ),

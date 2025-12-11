@@ -7,12 +7,14 @@ class LoginScreen extends StatefulWidget {
   final Function(String, {dynamic data}) navigate;
   final Function(bool) setIsLoggedIn;
   final Function(String) setUserName;
+  final Function(Address) setUserAddress;
 
   const LoginScreen({
     super.key,
     required this.navigate,
     required this.setIsLoggedIn,
     required this.setUserName,
+    required this.setUserAddress,
   });
 
   @override
@@ -21,19 +23,38 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _passwordVisible = false;
-  final TextEditingController _usernameController = TextEditingController(text: 'Sarah'); // Dummy data
-  final TextEditingController _passwordController = TextEditingController(text: 'password123'); // Dummy data
+  final TextEditingController _usernameController = TextEditingController(text: 'Sarah');
+  final TextEditingController _passwordController = TextEditingController(text: 'password123');
 
   void _handleLogin() {
-    // Simulasi Login Sukses
     widget.setIsLoggedIn(true);
     widget.setUserName(_usernameController.text.isEmpty ? 'Sarah' : _usernameController.text);
+    widget.setUserAddress(Address(
+      name: _usernameController.text,
+      phone: '0812-3456-7890',
+      address: 'Jl. Bojongsoang No. 10, Kecamatan Bojongsoang, Kab. Bandung, 40288',
+      email: 'sarah.nail@mail.com',
+    ));
     widget.navigate('Home');
   }
 
   void _handleGuestLogin() {
     widget.setIsLoggedIn(false);
+    widget.setUserName('Guest');
+    widget.setUserAddress(Address(
+      name: 'Guest',
+      phone: '',
+      address: 'Harap login untuk mengisi alamat.',
+      email: '',
+    ));
     widget.navigate('Home');
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -80,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: customPink)),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -97,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: customPink)),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -112,11 +133,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     elevation: 5,
                     shadowColor: customPink.withOpacity(0.4),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Login', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                      SizedBox(width: 8),
+                      const Text('Login', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 8),
                       Icon(LucideIcons.chevronRight, size: 20, color: Colors.white),
                     ],
                   ),
@@ -150,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text('Lanjut sebagai Guest', style: TextStyle(color: Colors.grey.shade500, fontSize: 14, decoration: TextDecoration.underline)),
                   ),
                 ),
-                const SizedBox(height: 50), // Padding Bawah
+                const SizedBox(height: 50),
               ],
             ),
           ),

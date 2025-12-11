@@ -33,40 +33,42 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedCategory = '';
 
   void _handleFavoriteToggle(int productId) {
+    bool wasFavorite = false;
     final updatedList = widget.newArrivals.map((p) {
       if (p.id == productId) {
+        wasFavorite = p.isFavorite;
         return p.copyWith(isFavorite: !p.isFavorite);
       }
       return p;
     }).toList();
     widget.setNewArrivals(updatedList);
+    if (!wasFavorite) {
+      widget.navigate('Favorites');
+    }
   }
 
   void _handleCategoryClick(String cat) {
     setState(() {
       _selectedCategory = _selectedCategory == cat ? '' : cat;
-      _searchTerm = ''; // Hapus istilah pencarian saat memilih kategori
+      _searchTerm = '';
     });
   }
 
-  // Logika Filter Produk (Seperti useMemo)
   List<Product> _getFilteredProducts() {
     List<Product> products = widget.newArrivals;
     final lowerCaseSearch = _searchTerm.toLowerCase();
 
-    // 1. Filter berdasarkan Search Term
     if (_searchTerm.isNotEmpty) {
       products = products.where((product) =>
           product.name.toLowerCase().contains(lowerCaseSearch) ||
           product.brand.toLowerCase().contains(lowerCaseSearch)).toList();
     }
 
-    // 2. Filter berdasarkan Selected Category (Simulasi)
     if (_selectedCategory.isNotEmpty) {
       final categoryFilter = _selectedCategory.toLowerCase();
       products = products.where((product) {
         final name = product.name.toLowerCase();
-        // Logika simulasi categorisasi
+        
         if (categoryFilter == 'nail polish') {
           return name.contains('polish') || name.contains('coat');
         }
@@ -115,8 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 8),
 
-            // Sembunyikan Featured saat Pencarian Aktif
-            if (!_isSearchActive) const _FeaturedSection(),
+            if (!_isSearchActive) _FeaturedSection(navigate: widget.navigate),
 
             const SizedBox(height: 16),
             _CategoriesSection(
@@ -134,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
               handleAddToCart: widget.handleAddToCart,
               navigate: widget.navigate,
             ),
-            const SizedBox(height: 100), // Padding untuk BottomNavBar
+            const SizedBox(height: 100), 
           ],
         ),
       ),
@@ -217,7 +218,8 @@ class _Header extends StatelessWidget {
 }
 
 class _FeaturedSection extends StatelessWidget {
-  const _FeaturedSection();
+  final Function(String, {dynamic data}) navigate;
+  const _FeaturedSection({required this.navigate});
 
   @override
   Widget build(BuildContext context) {
@@ -259,54 +261,70 @@ class _FeaturedSection extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) => const SizedBox(height: 140, child: Center(child: Text('REMOVER'))),
                   ),
                 ),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: ElevatedButton(
+                    onPressed: () => print('Shop Remover'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: customPink,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      minimumSize: const Size(80, 30),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('SHOP NOW', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ),
+                )
               ],
             ),
           ),
           // Banner 2: LED UV Lamp
-          Container(
-            width: MediaQuery.of(context).size.width * 0.45,
-            height: 200,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade200,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Stack(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('KUKEI', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue)),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Pro Nail LED UV Lamp',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, height: 1.1, color: Colors.blue),
-                    ),
-                    const SizedBox(height: 8),
-                    Text('Keringkan Gel Polish lebih cepat dan merata. Daya 54W.', style: TextStyle(fontSize: 10, color: Colors.blue.shade800)),
-                  ],
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: -5,
-                  child: Image.network(
-                    'https://i.ibb.co/hK5XjT0/uv-lamp.png',
-                    height: 100,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const SizedBox(height: 100, child: Center(child: Text('LAMP'))),
+          InkWell(
+            onTap: () => navigate('PDP', data: initialNewArrivals[4]),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              height: 200,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade200,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('KUKEI', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E88E5))),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Pro Nail LED UV Lamp',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, height: 1.1, color: Color(0xFF0D47A1)),
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Keringkan Gel Polish lebih cepat dan merata.', style: TextStyle(fontSize: 10, color: Colors.blue.shade800)),
+                    ],
                   ),
-                ),
-                const Positioned(
-                  bottom: 0,
-                  left: 0,
-                  child: Text('15% OFF | BELI SEKARANG', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue)),
-                ),
-                const Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Icon(LucideIcons.plus, size: 16, color: Colors.blue),
-                ),
-              ],
+                  Positioned(
+                    bottom: 0,
+                    right: -5,
+                    child: Image.network(
+                      'https://i.ibb.co/hK5XjT0/uv-lamp.png',
+                      height: 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const SizedBox(height: 100, child: Center(child: Text('LAMP'))),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: Text('15% OFF | BELI SEKARANG', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue.shade800)),
+                  ),
+                  const Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Icon(LucideIcons.plus, size: 16, color: Color(0xFF0D47A1)),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -388,6 +406,13 @@ class _NewArrivalsSection extends StatelessWidget {
             ? 'Produk Kategori: $selectedCategory'
             : 'Produk Terbaru';
 
+    final showNoResults = products.isEmpty && (searchTerm.isNotEmpty || selectedCategory.isNotEmpty);
+    final showAllButton = searchTerm.isEmpty && selectedCategory.isEmpty && products.isNotEmpty;
+    
+    final displayProducts = (searchTerm.isNotEmpty || selectedCategory.isNotEmpty) 
+        ? products
+        : products.take(4).toList();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -397,7 +422,7 @@ class _NewArrivalsSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              if (searchTerm.isEmpty && selectedCategory.isEmpty)
+              if (showAllButton)
                 TextButton(
                   onPressed: () => navigate('AllProducts'),
                   child: Text('Lihat semua', style: TextStyle(color: Colors.grey.shade500)),
@@ -405,7 +430,7 @@ class _NewArrivalsSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          if (products.isEmpty)
+          if (showNoResults)
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 40),
@@ -421,7 +446,7 @@ class _NewArrivalsSection extends StatelessWidget {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: products.map((product) => Padding(
+                children: displayProducts.map((product) => Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: ProductCard(
                     product: product,

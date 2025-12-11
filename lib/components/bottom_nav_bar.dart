@@ -5,7 +5,7 @@ import '../config.dart';
 class BottomNavBar extends StatelessWidget {
   final String currentView;
   final int cartCount;
-  final Function(String) navigate;
+  final Function(String, {dynamic data}) navigate;
 
   const BottomNavBar({
     super.key,
@@ -14,13 +14,16 @@ class BottomNavBar extends StatelessWidget {
     required this.navigate,
   });
 
-  // Tentukan tab aktif berdasarkan currentView
   String _determineActiveTab(String view) {
     if (['Home', 'PDP', 'AllProducts'].contains(view)) {
       return 'Home';
+    } else if (['Gallery', 'GalleryDetail'].contains(view)) {
+      return 'Gallery';
+    } else if (['Booking', 'BookingHistory'].contains(view)) {
+      return 'Booking';
     } else if (['Cart', 'Checkout', 'PaymentProcessing', 'OrderSuccess'].contains(view)) {
       return 'Cart';
-    } else if (view == 'Account') {
+    } else if (['Account', 'Favorites', 'Notifications', 'Vouchers', 'Settings', 'HelpFAQ'].contains(view)) {
       return 'Account';
     }
     return '';
@@ -62,15 +65,15 @@ class BottomNavBar extends StatelessWidget {
             ),
             _NavItem(
               icon: LucideIcons.sparkles,
-              label: "Gaya",
-              active: determinedActiveTab == 'Gaya',
-              onTap: () => print('Navigasi ke Gaya'),
+              label: "Galeri",
+              active: determinedActiveTab == 'Gallery',
+              onTap: () => navigate('Gallery'),
             ),
             _NavItem(
-              icon: LucideIcons.menu,
-              label: "Katalog",
-              active: determinedActiveTab == 'Katalog',
-              onTap: () => print('Navigasi ke Katalog'),
+              icon: LucideIcons.clock,
+              label: "Booking",
+              active: determinedActiveTab == 'Booking',
+              onTap: () => navigate('Booking'),
             ),
             _NavItem(
               icon: LucideIcons.shoppingBag,
@@ -97,7 +100,7 @@ class _NavItem extends StatelessWidget {
   final String label;
   final bool active;
   final int count;
-  final VoidCallback onTap;
+  final Function() onTap;
 
   const _NavItem({
     required this.icon,
@@ -120,7 +123,7 @@ class _NavItem extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               Icon(icon, size: 24, color: color),
-              if (count > 0)
+              if (count > 0 && label == 'Keranjang')
                 Positioned(
                   top: -5,
                   right: -5,

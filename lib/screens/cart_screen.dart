@@ -3,7 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
 import '../components/helper_widgets.dart';
 
-class ShoppingCartScreen extends StatelessWidget {
+class ShoppingCartScreen extends StatefulWidget {
   final VoidCallback goBack;
   final Function(String, {dynamic data}) navigate;
   final List<CartItem> cart;
@@ -17,16 +17,45 @@ class ShoppingCartScreen extends StatelessWidget {
     required this.updateCartQuantity,
   });
 
-  void _handleRemoveItem(int productId) {
-    updateCartQuantity(productId, -100); // Hapus semua
-  }
+  @override
+  State<ShoppingCartScreen> createState() => _ShoppingCartScreenState();
+}
+
+class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
+  // State untuk Modal
+  bool _isModalOpen = false;
+  CartItem? _itemToDelete;
 
   int _calculateSubtotal() {
-    return cart.fold(0, (sum, item) => sum + item.product.price * item.quantity);
+    return widget.cart.fold(0, (sum, item) => sum + item.product.price * item.quantity);
   }
 
   int _calculateShipping(int subtotal) {
     return subtotal > 500000 ? 0 : 30000;
+  }
+
+  void _handleOpenModal(CartItem item) {
+    setState(() {
+      _itemToDelete = item;
+      _isModalOpen = true;
+    });
+  }
+
+  void _handleConfirmDelete() {
+    if (_itemToDelete != null) {
+      widget.updateCartQuantity(_itemToDelete!.product.id, -100);
+    }
+    setState(() {
+      _itemToDelete = null;
+      _isModalOpen = false;
+    });
+  }
+
+  void _handleCancelDelete() {
+    setState(() {
+      _itemToDelete = null;
+      _isModalOpen = false;
+    });
   }
 
   @override
@@ -37,41 +66,37 @@ class ShoppingCartScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: goBack,
-        ),
+        leading: BackButtonIcon(onBack: widget.goBack),
         title: const Text('Shopping Cart', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: cart.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.shopping_bag_outlined, size: 48, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  Text('Keranjang belanja Anda kosong.', style: TextStyle(color: Colors.grey.shade500)),
-                  TextButton(
-                    onPressed: () => navigate('Home'),
-                    child: Text('Lanjut Berbelanja', style: TextStyle(color: customPink, decoration: TextDecoration.underline)),
+      body: Stack(
+        children: [
+          widget.cart.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(LucideIcons.shoppingBag, size: 48, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      Text('Keranjang belanja Anda kosong.', style: TextStyle(color: Colors.grey.shade500)),
+                      TextButton(
+                        onPressed: () => widget.navigate('Home'),
+                        child: Text('Lanjut Berbelanja', style: TextStyle(color: customPink, decoration: TextDecoration.underline)),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )
-          : Stack(
-              children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 120), // Ruang untuk tombol checkout
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 120),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        // Daftar Item
-                        ...cart.map((item) => _CartItem(
+                        ...widget.cart.map((item) => _CartItem(
                               item: item,
-                              updateCartQuantity: updateCartQuantity,
-                              handleRemoveItem: _handleRemoveItem,
+                              updateCartQuantity: widget.updateCartQuantity,
+                              handleRemoveItem: _handleOpenModal,
                             )),
                         const SizedBox(height: 24),
 
@@ -91,6 +116,7 @@ class ShoppingCartScreen extends StatelessWidget {
                                       decoration: InputDecoration(
                                         hintText: 'Masukkan kupon',
                                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: customPink)),
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                       ),
                                     ),
@@ -116,30 +142,39 @@ class ShoppingCartScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Tombol Checkout
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () => navigate('Checkout'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: customPink,
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: Text('Proceed to Checkout (${formatRupiah(total)})', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
+          
+          if (widget.cart.isNotEmpty)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
                 ),
-              ],
+                child: ElevatedButton(
+                  onPressed: () => widget.navigate('Checkout'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: customPink,
+                    minimumSize: const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text('Proceed to Checkout (${formatRupiah(total)})', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+              ),
             ),
+
+          if (_isModalOpen && _itemToDelete != null)
+            _ConfirmationModal(
+              onClose: _handleCancelDelete,
+              onConfirm: _handleConfirmDelete,
+              itemTitle: _itemToDelete!.product.name,
+              itemImage: _itemToDelete!.product.imageUrl,
+            ),
+        ],
+      ),
     );
   }
 }
@@ -147,7 +182,7 @@ class ShoppingCartScreen extends StatelessWidget {
 class _CartItem extends StatelessWidget {
   final CartItem item;
   final Function(int, int) updateCartQuantity;
-  final Function(int) handleRemoveItem;
+  final Function(CartItem) handleRemoveItem;
 
   const _CartItem({
     required this.item,
@@ -172,12 +207,7 @@ class _CartItem extends StatelessWidget {
             child: Image.network(
               item.product.imageUrl,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => Center(
-                child: Text(
-                  item.product.name.length >= 4 ? item.product.name.substring(0, 4) : item.product.name,
-                  style: const TextStyle(fontSize: 10),
-                ),
-              ),
+              errorBuilder: (context, error, stackTrace) => Center(child: Text(item.product.name.substring(0, 4))),
             ),
           ),
           const SizedBox(width: 12),
@@ -199,8 +229,8 @@ class _CartItem extends StatelessWidget {
                       ),
                     ),
                     InkWell(
-                      onTap: () => handleRemoveItem(item.product.id),
-                      child: const Icon(Icons.close, size: 16, color: Colors.grey),
+                      onTap: () => handleRemoveItem(item),
+                      child: const Icon(LucideIcons.x, size: 16, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -215,13 +245,12 @@ class _CartItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
                           InkWell(
                             onTap: () => updateCartQuantity(item.product.id, -1),
                             child: const Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Icon(Icons.remove, size: 16),
+                              child: Icon(LucideIcons.minus, size: 16),
                             ),
                           ),
                           Padding(
@@ -232,7 +261,7 @@ class _CartItem extends StatelessWidget {
                             onTap: () => updateCartQuantity(item.product.id, 1),
                             child: const Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Icon(Icons.add, size: 16),
+                              child: Icon(LucideIcons.plus, size: 16),
                             ),
                           ),
                         ],
@@ -284,6 +313,90 @@ class _SummaryRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ConfirmationModal extends StatelessWidget {
+  final VoidCallback onClose;
+  final VoidCallback onConfirm;
+  final String itemTitle;
+  final String itemImage;
+
+  const _ConfirmationModal({
+    required this.onClose,
+    required this.onConfirm,
+    required this.itemTitle,
+    required this.itemImage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withOpacity(0.4),
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: customPinkLight, width: 4),
+                ),
+                child: Image.network(
+                  itemImage,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Center(child: Icon(LucideIcons.shoppingBag, color: customPink)),
+                ),
+              ),
+              const Text(
+                'Hapus item ini?',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '"$itemTitle" akan dihapus dari keranjang Anda.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: onClose,
+                      child: Text('Batal', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: onConfirm,
+                      style: TextButton.styleFrom(
+                        backgroundColor: customPinkLight.withOpacity(0.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text('Hapus', style: TextStyle(color: customPink, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

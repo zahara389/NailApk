@@ -9,6 +9,7 @@ class AllProductsScreen extends StatelessWidget {
   final Function(String, {dynamic data}) navigate;
   final List<Product> newArrivals;
   final Function(Product) handleAddToCart;
+  final Function(List<Product>) setNewArrivals;
 
   const AllProductsScreen({
     super.key,
@@ -16,21 +17,29 @@ class AllProductsScreen extends StatelessWidget {
     required this.navigate,
     required this.newArrivals,
     required this.handleAddToCart,
+    required this.setNewArrivals,
   });
 
   void _handleFavoriteToggle(int productId) {
-    // Simulasi, karena state produk ada di App utama
-    print('Toggled favorite for product ID: $productId');
+    bool wasFavorite = false;
+    final updatedList = newArrivals.map((p) {
+      if (p.id == productId) {
+        wasFavorite = p.isFavorite;
+        return p.copyWith(isFavorite: !p.isFavorite);
+      }
+      return p;
+    }).toList();
+    setNewArrivals(updatedList);
+    if (!wasFavorite) {
+      navigate('Favorites');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: goBack,
-        ),
+        leading: BackButtonIcon(onBack: goBack),
         title: Text('Semua Produk (${newArrivals.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: false,
       ),
@@ -46,7 +55,7 @@ class AllProductsScreen extends StatelessWidget {
                   crossAxisCount: 2,
                   crossAxisSpacing: 16.0,
                   mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.7, // Mengatur rasio agar kartu produk terlihat bagus
+                  childAspectRatio: 0.7,
                 ),
                 itemCount: newArrivals.length,
                 itemBuilder: (context, index) {
@@ -56,7 +65,7 @@ class AllProductsScreen extends StatelessWidget {
                     navigateToPdp: (p) => navigate('PDP', data: p),
                     handleFavoriteToggle: _handleFavoriteToggle,
                     handleAddToCart: handleAddToCart,
-                    isGrid: true, // Untuk memastikan card menggunakan lebar penuh grid
+                    isGrid: true,
                   );
                 },
               ),

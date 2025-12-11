@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
 
 // Widget ikon Checkmark kustom
 class CustomCheckmark extends StatelessWidget {
   final double size;
-  const CustomCheckmark({super.key, this.size = 24.0});
+  final Color color;
+  const CustomCheckmark({super.key, this.size = 24.0, this.color = Colors.black});
 
   @override
   Widget build(BuildContext context) {
-    return Icon(Icons.check, size: size);
+    return Icon(Icons.check, size: size, color: color);
   }
 }
 
@@ -22,29 +24,6 @@ class BackButtonIcon extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.chevron_left, size: 28),
       onPressed: onBack,
-    );
-  }
-}
-
-// Widget Ikon Sosial (Placeholder)
-class SocialIcon extends StatelessWidget {
-  final Widget icon;
-  final VoidCallback onClick;
-  const SocialIcon({super.key, required this.icon, required this.onClick});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onClick,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Center(child: icon),
-      ),
     );
   }
 }
@@ -71,6 +50,7 @@ class PaymentOption extends StatelessWidget {
         width: 32,
         height: 24,
         fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const SizedBox(width: 32, height: 24, child: Center(child: Text('VISA', style: TextStyle(fontSize: 10)))),
       );
     } else if (icon == 'QRIS') {
       return const Text('QRIS', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.green, fontSize: 12));
@@ -112,7 +92,7 @@ class PaymentOption extends StatelessWidget {
                   color: customPink,
                   shape: BoxShape.circle,
                 ),
-                child: const CustomCheckmark(size: 12),
+                child: const CustomCheckmark(size: 12, color: Colors.white),
               ),
           ],
         ),
@@ -128,6 +108,7 @@ class ShippingOption extends StatelessWidget {
   final String duration;
   final bool selected;
   final VoidCallback onSelect;
+  final Function(int) formatRupiah;
 
   const ShippingOption({
     super.key,
@@ -136,6 +117,7 @@ class ShippingOption extends StatelessWidget {
     required this.duration,
     required this.selected,
     required this.onSelect,
+    required this.formatRupiah,
   });
 
   @override
@@ -161,7 +143,24 @@ class ShippingOption extends StatelessWidget {
                 Text(duration, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
               ],
             ),
-            Text(cost == 0 ? 'Gratis' : formatRupiah(cost), style: const TextStyle(fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                Text(cost == 0 ? 'Gratis' : formatRupiah(cost), style: const TextStyle(fontWeight: FontWeight.bold)),
+                if (selected)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12.0),
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: customPink,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const CustomCheckmark(size: 12, color: Colors.white),
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
       ),

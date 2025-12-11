@@ -9,7 +9,6 @@ class OrderSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Generate Order Number acak
     final orderNumber = 'ORD${(DateTime.now().millisecondsSinceEpoch % 100000).toString().padLeft(5, '0')}';
 
     return Scaffold(

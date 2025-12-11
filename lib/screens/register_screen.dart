@@ -14,13 +14,11 @@ class RegisterScreen extends StatelessWidget {
   });
 
   void _handleRegister() {
-    // Simulasi Pendaftaran
     print('User Registered. Navigating to Login...');
     navigate('Login');
   }
 
   void _handleGuestLogin() {
-    // Simulasi Login Guest
     navigate('Home');
   }
 
@@ -45,10 +43,7 @@ class RegisterScreen extends StatelessWidget {
           CustomScrollView(
             slivers: [
               SliverAppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: goBack,
-                ),
+                leading: BackButtonIcon(onBack: goBack),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 pinned: false,
@@ -72,10 +67,10 @@ class RegisterScreen extends StatelessWidget {
 
                     // Input Nama
                     TextFormField(
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Nama',
-                        contentPadding: EdgeInsets.only(bottom: 12),
-                        border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                        contentPadding: const EdgeInsets.only(bottom: 12),
+                        border: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
                         focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: customPink)),
                       ),
                     ),
@@ -84,10 +79,10 @@ class RegisterScreen extends StatelessWidget {
                     // Input Email
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Email',
-                        contentPadding: EdgeInsets.only(bottom: 12),
-                        border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                        contentPadding: const EdgeInsets.only(bottom: 12),
+                        border: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
                         focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: customPink)),
                       ),
                     ),
@@ -96,10 +91,10 @@ class RegisterScreen extends StatelessWidget {
                     // Input Password
                     TextFormField(
                       obscureText: true,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Password',
-                        contentPadding: EdgeInsets.only(bottom: 12),
-                        border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                        contentPadding: const EdgeInsets.only(bottom: 12),
+                        border: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
                         focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: customPink)),
                       ),
                     ),
@@ -115,12 +110,12 @@ class RegisterScreen extends StatelessWidget {
                         elevation: 5,
                         shadowColor: customPink.withOpacity(0.4),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Sign up', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                          SizedBox(width: 8),
-                          Icon(Icons.chevron_right, size: 20, color: Colors.white),
+                          const Text('Sign up', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 8),
+                          Icon(LucideIcons.chevronRight, size: 20, color: Colors.white),
                         ],
                       ),
                     ),
@@ -153,7 +148,7 @@ class RegisterScreen extends StatelessWidget {
                         child: Text('Lanjut sebagai Guest', style: TextStyle(color: Colors.grey.shade500, fontSize: 14, decoration: TextDecoration.underline)),
                       ),
                     ),
-                    const SizedBox(height: 50), // Padding Bawah
+                    const SizedBox(height: 50),
                   ]),
                 ),
               ),
