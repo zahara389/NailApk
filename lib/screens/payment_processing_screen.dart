@@ -23,7 +23,6 @@ class PaymentProcessingScreen extends StatefulWidget {
 }
 
 class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
-  // State lokal untuk konfirmasi copy
   bool _copied = false;
 
   void _handleSuccessConfirmation() {
@@ -36,22 +35,19 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
   void _copyToClipboard(String value) {
     Clipboard.setData(ClipboardData(text: value));
-    setState(() {
-      _copied = true;
-    });
+    setState(() => _copied = true);
+
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _copied = false;
-        });
-      }
+      if (mounted) setState(() => _copied = false);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     if (widget.paymentDetails == null) {
-      return const Scaffold(body: Center(child: Text('Detail pembayaran tidak tersedia.')));
+      return const Scaffold(
+        body: Center(child: Text('Detail pembayaran tidak tersedia.')),
+      );
     }
 
     final details = widget.paymentDetails!;
@@ -71,7 +67,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         width: 150,
         height: 150,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => const SizedBox(width: 150, height: 150, child: Center(child: Text('QRIS Code'))),
+        errorBuilder: (context, error, stackTrace) =>
+            const SizedBox(width: 150, height: 150, child: Center(child: Text('QRIS Code'))),
       );
     } else if (methodKey == 'Visa') {
       paymentData = [
@@ -88,87 +85,140 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: widget.goBack),
-        title: const Text('Tagihan Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: widget.goBack,
+        ),
+        title: const Text(
+          'Tagihan Pembayaran',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Timer Card
+            // -------------------------------------------------------------------------
+            // TIMER CARD
+            // -------------------------------------------------------------------------
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)
+                ],
                 border: Border(top: BorderSide(color: customPink, width: 4)),
               ),
               child: Column(
                 children: [
                   Icon(LucideIcons.clock, size: 36, color: customPink),
                   const SizedBox(height: 12),
-                  const Text('Menunggu Pembayaran', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Menunggu Pembayaran',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Selesaikan pembayaran sebelum:', style: TextStyle(color: Colors.grey.shade500)),
+                  Text('Selesaikan pembayaran sebelum:',
+                      style: TextStyle(color: Colors.grey.shade500)),
                   const SizedBox(height: 8),
                   Text(
                     '${dueDate.day}/${dueDate.month}/${dueDate.year} | $dueTime WIB',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.red),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.red,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Text('No. Order: ${details.newOrder.id}', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
+                  Text(
+                    'No. Order: ${details.newOrder.id}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                  ),
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
 
-            // Detail Pembayaran Dinamis
+            // -------------------------------------------------------------------------
+            // DETAIL PEMBAYARAN
+            // -------------------------------------------------------------------------
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Pembayaran ($methodKey)', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Pembayaran ($methodKey)',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   const Divider(height: 20),
                   Center(child: iconContent),
                   const SizedBox(height: 16),
-                  ...paymentData.map((data) => _DetailRow(
-                        key: ValueKey(data['value']), 
-                        label: data['label'] as String,
-                        value: data['value'] as String,
-                        isCopyable: data['isCopyable'] as bool,
-                        onCopy: _copyToClipboard,
-                        copied: _copied,
-                      )),
+
+                  ...paymentData.map(
+                    (data) => _DetailRow(
+                      key: ValueKey(data['value']),
+                      label: data['label'] as String,
+                      value: data['value'] as String,
+                      isCopyable: data['isCopyable'] as bool,
+                      onCopy: _copyToClipboard,
+                      copied: _copied,
+                    ),
+                  ),
+
                   const Divider(height: 20),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total Bayar', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
-                      Text(formatRupiah(totalAmount), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: customPink)),
+                      const Text(
+                        'Total Bayar',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w900),
+                      ),
+                      Text(
+                        formatRupiah(totalAmount),
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: customPink),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
 
-            // Tombol Simulasi Konfirmasi
+            // -------------------------------------------------------------------------
+            // SIMULASI BUTTON
+            // -------------------------------------------------------------------------
             ElevatedButton(
               onPressed: _handleSuccessConfirmation,
               style: ElevatedButton.styleFrom(
                 backgroundColor: customPink,
                 minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Simulasi: Konfirmasi Pembayaran Berhasil', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Simulasi: Konfirmasi Pembayaran Berhasil',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart'; 
+import 'package:lucide_icons/lucide_icons.dart';
 
 // Screens
 import 'screens/account_screen.dart';
@@ -50,18 +50,13 @@ class NailStudioApp extends StatelessWidget {
         primaryColor: customPink,
         colorScheme: ColorScheme.fromSwatch().copyWith(secondary: customPink),
         scaffoldBackgroundColor: Colors.white,
-        fontFamily: 'Inter', 
+        fontFamily: 'Inter',
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           elevation: 0,
-          titleTextStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+          titleTextStyle:
+              TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
           iconTheme: IconThemeData(color: Colors.black),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          labelStyle: TextStyle(color: Colors.grey.shade600),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: customPink, width: 2)),
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey.shade300)),
-          border: const OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
         ),
       ),
       home: const AppRouter(),
@@ -77,38 +72,40 @@ class AppRouter extends StatefulWidget {
 }
 
 class _AppRouterState extends State<AppRouter> {
-  // State untuk Routing
+  // Routing State
   String _currentView = 'Login';
   final List<String> _history = ['Login'];
 
-  // State Otentikasi
+  // User State
   bool _isLoggedIn = false;
   String _userName = 'Guest';
-  Address _userAddress = Address(name: 'Guest', phone: '', address: 'Harap login untuk mengisi alamat.', email: '');
+  Address _userAddress =
+      Address(name: 'Guest', phone: '', address: 'Harap login untuk isi alamat.', email: '');
 
-  // State Produk dan Galeri
+  // Product State
   List<CartItem> _cart = [];
   List<Product> _newArrivals = initialNewArrivals;
-  List<GalleryItem> _galleryItems = initialGalleryItems;
-  
-  // State Detail
   Product? _selectedProduct;
+
+  // Gallery State
+  List<GalleryItem> _galleryItems = initialGalleryItems;
   GalleryItem? _selectedGalleryItem;
 
-  // State Transaksi
+  // Transaction State
   PaymentDetails? _paymentDetails;
   List<PurchaseHistory> _purchaseHistory = dummyPurchaseHistory;
   List<Booking> _bookingHistory = dummyBookingHistory;
   List<NotificationItem> _notifications = dummyNotifications;
 
-
-  // MARK: - Navigation Functions
+  // NAVIGATION
   void navigate(String view, {dynamic data}) {
     setState(() {
+      // Login / Register resets history
       if (view == 'Login' || view == 'Register') {
         _history.clear();
       }
-      
+
+      // Home clears to single root
       if (view == 'Home' && _currentView != 'Login' && _currentView != 'Register') {
         _history.removeRange(1, _history.length);
       }
@@ -116,23 +113,22 @@ class _AppRouterState extends State<AppRouter> {
       _currentView = view;
       _history.add(view);
 
-      // Handle selection updates
+      // Product Detail Picker
       if (view == 'PDP' && data is Product) {
         _selectedProduct = _newArrivals.firstWhere((p) => p.id == data.id);
       } else {
-        _selectedProduct = null;
+        if (view != 'PDP') _selectedProduct = null;
       }
-      
+
+      // Gallery Detail Picker
       if (view == 'GalleryDetail' && data is GalleryItem) {
         _selectedGalleryItem = _galleryItems.firstWhere((g) => g.id == data.id);
       } else {
-        _selectedGalleryItem = null;
+        if (view != 'GalleryDetail') _selectedGalleryItem = null;
       }
-      
-      // Clear cart after OrderSuccess
-      if (view == 'OrderSuccess') {
-        _cart.clear();
-      }
+
+      // Clear cart after success
+      if (view == 'OrderSuccess') _cart.clear();
     });
   }
 
@@ -140,10 +136,10 @@ class _AppRouterState extends State<AppRouter> {
     if (_history.length > 1) {
       _history.removeLast();
       final previousView = _history.last;
+
       setState(() {
         _currentView = previousView;
-        
-        // Clear selected items if not returning to their specific detail screens
+
         if (previousView != 'PDP') _selectedProduct = null;
         if (previousView != 'GalleryDetail') _selectedGalleryItem = null;
       });
@@ -153,97 +149,48 @@ class _AppRouterState extends State<AppRouter> {
       }
     }
   }
-  
-  // MARK: - State Management Functions
-  
-  void setUserAddress(Address address) {
-    setState(() {
-      _userAddress = address;
-    });
-  }
-  
-  void toggleProductFavorite(int productId) {
-    setState(() {
-      _newArrivals = _newArrivals.map((p) {
-        if (p.id == productId) {
-          return p.copyWith(isFavorite: !p.isFavorite);
-        }
-        return p;
-      }).toList();
-    });
-  }
 
-  void toggleGalleryFavorite(int itemId) {
-    setState(() {
-      _galleryItems = _galleryItems.map((item) {
-        if (item.id == itemId) {
-          return item.copyWith(isFavorite: !item.isFavorite);
-        }
-        return item;
-      }).toList();
-    });
-  }
-
+  // STATE ACTIONS
   void handleAddToCart(Product product) {
     setState(() {
-      final existingItemIndex = _cart.indexWhere((item) => item.product.id == product.id);
+      final index = _cart.indexWhere((item) => item.product.id == product.id);
 
-      if (existingItemIndex >= 0) {
-        final existingItem = _cart[existingItemIndex];
-        _cart[existingItemIndex] = existingItem.copyWith(quantity: existingItem.quantity + 1);
+      if (index >= 0) {
+        _cart[index] =
+            _cart[index].copyWith(quantity: _cart[index].quantity + 1);
       } else {
-        final masterProduct = _newArrivals.firstWhere((p) => p.id == product.id);
-        _cart.add(CartItem(product: masterProduct, quantity: 1));
+        _cart.add(CartItem(product: product, quantity: 1));
       }
     });
   }
 
-  void updateCartQuantity(int productId, int delta) {
+  void updateCartQuantity(int id, int delta) {
     setState(() {
-      final updatedCart = _cart.map((item) {
-        if (item.product.id == productId) {
-          return item.copyWith(quantity: item.quantity + delta);
-        }
-        return item;
-      }).where((item) => item.quantity > 0).toList();
-
-      _cart = updatedCart;
-    });
-  }
-  
-  void addPurchaseToHistory(PurchaseHistory order) {
-    setState(() {
-      _purchaseHistory = [order, ..._purchaseHistory];
-      _cart.clear();
+      _cart = _cart
+          .map((item) => item.product.id == id
+              ? item.copyWith(quantity: item.quantity + delta)
+              : item)
+          .where((item) => item.quantity > 0)
+          .toList();
     });
   }
 
-  void addBookingToHistory(Booking booking) {
-    setState(() {
-      _bookingHistory = [booking, ..._bookingHistory];
-    });
-  }
+  int get cartCount => _cart.fold(0, (t, i) => t + i.quantity);
 
-  void markNotificationAsRead(int id) {
-    setState(() {
-      _notifications = _notifications.map((n) => n.id == id ? n.copyWith(read: true) : n).toList();
-    });
-  }
-  
-  int get cartCount => _cart.fold(0, (sum, item) => sum + item.quantity);
-
-  // MARK: - Render View
+  // RENDER VIEW
   Widget _renderView() {
     switch (_currentView) {
       case 'Login':
         return LoginScreen(
           navigate: navigate,
-          setIsLoggedIn: (val) => setState(() => _isLoggedIn = val),
+          setIsLoggedIn: (v) => setState(() => _isLoggedIn = v),
           setUserName: (name) => setState(() => _userName = name),
-          setUserAddress: setUserAddress,
+          setUserAddress: (addr) => setState(() => _userAddress = addr),
         );
+
       case 'Register':
         return RegisterScreen(navigate: navigate, goBack: goBack);
+
       case 'Home':
         return HomeScreen(
           navigate: navigate,
@@ -254,8 +201,11 @@ class _AppRouterState extends State<AppRouter> {
           handleAddToCart: handleAddToCart,
           currentView: _currentView,
         );
+
       case 'PDP':
-        if (_selectedProduct == null) return const Center(child: Text('Produk tidak ditemukan.'));
+        if (_selectedProduct == null) {
+          return const Center(child: Text("Produk tidak ditemukan."));
+        }
         return ProductDetailScreen(
           goBack: goBack,
           navigate: navigate,
@@ -263,7 +213,9 @@ class _AppRouterState extends State<AppRouter> {
           handleAddToCart: handleAddToCart,
           cartCount: cartCount,
           setNewArrivals: (list) => setState(() => _newArrivals = list),
+          newArrivals: _newArrivals, // <--- FIX PENTING
         );
+
       case 'Cart':
         return ShoppingCartScreen(
           goBack: goBack,
@@ -271,15 +223,18 @@ class _AppRouterState extends State<AppRouter> {
           cart: _cart,
           updateCartQuantity: updateCartQuantity,
         );
+
       case 'Checkout':
         return CheckoutScreen(
           goBack: goBack,
           navigate: navigate,
           cart: _cart,
-          setPaymentDetails: (details) => setState(() => _paymentDetails = details),
-          addPurchaseToHistory: addPurchaseToHistory,
+          setPaymentDetails: (p) => setState(() => _paymentDetails = p),
+          addPurchaseToHistory: (h) =>
+              setState(() => _purchaseHistory = [h, ..._purchaseHistory]),
           initialAddress: _userAddress,
         );
+
       case 'AllProducts':
         return AllProductsScreen(
           goBack: goBack,
@@ -288,95 +243,124 @@ class _AppRouterState extends State<AppRouter> {
           handleAddToCart: handleAddToCart,
           setNewArrivals: (list) => setState(() => _newArrivals = list),
         );
+
       case 'Account':
         return AccountScreen(
           goBack: goBack,
           navigate: navigate,
           isLoggedIn: _isLoggedIn,
-          setIsLoggedIn: (val) => setState(() => _isLoggedIn = val),
+          setIsLoggedIn: (v) => setState(() => _isLoggedIn = v),
           userName: _userName,
-          currentView: _currentView,
           purchaseHistory: _purchaseHistory,
           notifications: _notifications,
           userAddress: _userAddress,
+          currentView: _currentView,
         );
+
+      case 'Gallery':
+        return GalleryScreen(
+          navigate: navigate,
+          goBack: goBack,
+          galleryItems: _galleryItems,
+          toggleFavorite: (id) {
+            setState(() {
+              _galleryItems = _galleryItems
+                  .map((i) =>
+                      i.id == id ? i.copyWith(isFavorite: !i.isFavorite) : i)
+                  .toList();
+            });
+          },
+        );
+
+      case 'GalleryDetail':
+        if (_selectedGalleryItem == null) {
+          return const Center(child: Text("Galeri tidak ditemukan."));
+        }
+        return GalleryDetailScreen(
+          goBack: goBack,
+          item: _selectedGalleryItem!,
+          toggleFavorite: (id) {
+            setState(() {
+              _galleryItems = _galleryItems
+                  .map((i) =>
+                      i.id == id ? i.copyWith(isFavorite: !i.isFavorite) : i)
+                  .toList();
+            });
+          },
+          navigate: navigate,
+        );
+
       case 'PaymentProcessing':
         return PaymentProcessingScreen(
           goBack: goBack,
           navigate: navigate,
           paymentDetails: _paymentDetails,
-          addPurchaseToHistory: addPurchaseToHistory,
+          addPurchaseToHistory: (h) =>
+              setState(() => _purchaseHistory = [h, ..._purchaseHistory]),
         );
+
       case 'OrderSuccess':
         return OrderSuccessScreen(navigate: navigate);
-      case 'Gallery':
-        return GalleryScreen(
-          navigate: navigate, 
-          goBack: goBack, 
-          galleryItems: _galleryItems, 
-          toggleFavorite: toggleGalleryFavorite, 
-        );
-      case 'GalleryDetail':
-        if (_selectedGalleryItem == null) return const Center(child: Text('Galeri tidak ditemukan.'));
-        return GalleryDetailScreen(
-          goBack: goBack, 
-          item: _selectedGalleryItem!, 
-          toggleFavorite: toggleGalleryFavorite, 
-          navigate: navigate,
-        );
-      case 'Booking':
-        return BookingScreen(
-          goBack: goBack, 
-          navigate: navigate, 
-          userName: _userName, 
-          addBookingToHistory: addBookingToHistory,
-        );
-      case 'BookingHistory':
-        return BookingHistoryScreen(
-          goBack: goBack, 
-          navigate: navigate, 
-          history: _bookingHistory,
-        );
+
       case 'Favorites':
         return FavoritesScreen(
-          goBack: goBack, 
-          navigate: navigate, 
-          newArrivals: _newArrivals, 
+          goBack: goBack,
+          navigate: navigate,
+          newArrivals: _newArrivals,
           galleryItems: _galleryItems,
         );
+
       case 'Notifications':
         return NotificationScreen(
-          goBack: goBack, 
-          navigate: navigate, 
-          notifications: _notifications, 
-          markAsRead: markNotificationAsRead,
+          goBack: goBack,
+          navigate: navigate,
+          notifications: _notifications,
+          markAsRead: (id) {
+            setState(() {
+              _notifications = _notifications
+                  .map((n) => n.id == id ? n.copyWith(read: true) : n)
+                  .toList();
+            });
+          },
         );
+
+      case 'Booking':
+        return BookingScreen(
+          goBack: goBack,
+          navigate: navigate,
+          userName: _userName,
+          addBookingToHistory: (b) =>
+              setState(() => _bookingHistory = [b, ..._bookingHistory]),
+        );
+
+      case 'BookingHistory':
+        return BookingHistoryScreen(
+          goBack: goBack,
+          navigate: navigate,
+          history: _bookingHistory,
+        );
+
       case 'Vouchers':
         return VoucherScreen(
-          goBack: goBack, 
-          navigate: navigate, 
+          goBack: goBack,
+          navigate: navigate,
           vouchers: dummyVouchers,
         );
+
       case 'Settings':
         return SettingsScreen(
-          goBack: goBack, 
+          goBack: goBack,
           navigate: navigate,
         );
+
       case 'HelpFAQ':
         return HelpFAQScreen(
-          goBack: goBack, 
+          goBack: goBack,
           navigate: navigate,
         );
+
       default:
-        return HomeScreen(
-          navigate: navigate,
-          userDisplayName: _isLoggedIn ? _userName : 'Guest',
-          cartCount: cartCount,
-          newArrivals: _newArrivals,
-          setNewArrivals: (list) => setState(() => _newArrivals = list),
-          handleAddToCart: handleAddToCart,
-          currentView: _currentView,
-        );
+        return const Center(child: Text("Unknown Route"));
     }
   }
 

@@ -25,10 +25,20 @@ class NotificationScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: goBack),
-        title: Text('Notifikasi (${unread.length} Baru)', style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
+
+        // FIX HERE (REMOVE BackButtonIcon)
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: goBack,
+        ),
+
+        title: Text(
+          'Notifikasi (${unread.length} Baru)',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
+
       body: notifications.isEmpty
           ? Center(
               child: Padding(
@@ -38,7 +48,8 @@ class NotificationScreen extends StatelessWidget {
                   children: [
                     Icon(LucideIcons.bell, size: 48, color: Colors.grey.shade400),
                     const SizedBox(height: 16),
-                    Text('Kotak masuk notifikasi Anda kosong.', style: TextStyle(color: Colors.grey.shade500)),
+                    Text('Kotak masuk notifikasi Anda kosong.',
+                        style: TextStyle(color: Colors.grey.shade500)),
                   ],
                 ),
               ),
@@ -49,15 +60,19 @@ class NotificationScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (unread.isNotEmpty) ...[
-                    const Text('Belum Dibaca', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Belum Dibaca',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
-                    ...unread.map((n) => _NotificationItem(notification: n, markAsRead: markAsRead)),
+                    ...unread.map((n) =>
+                        _NotificationItem(notification: n, markAsRead: markAsRead)),
                     const SizedBox(height: 24),
                   ],
                   if (read.isNotEmpty) ...[
-                    const Text('Sudah Dibaca', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Sudah Dibaca',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
-                    ...read.map((n) => _NotificationItem(notification: n, markAsRead: markAsRead)),
+                    ...read.map((n) =>
+                        _NotificationItem(notification: n, markAsRead: markAsRead)),
                   ],
                 ],
               ),
@@ -102,8 +117,12 @@ class _NotificationItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: notification.read ? Colors.white : customPinkLight.withOpacity(0.7),
           borderRadius: BorderRadius.circular(12),
-          border: notification.read ? Border.all(color: Colors.grey.shade100) : Border(right: BorderSide(color: customPink, width: 4)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+          border: notification.read
+              ? Border.all(color: Colors.grey.shade100)
+              : Border(right: BorderSide(color: customPink, width: 4)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +132,8 @@ class _NotificationItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(color: notification.read ? Colors.grey.shade200 : customPink),
+                border: Border.all(
+                    color: notification.read ? Colors.grey.shade200 : customPink),
               ),
               child: Icon(iconData, size: 20, color: iconColor),
             ),
@@ -127,14 +147,35 @@ class _NotificationItem extends StatelessWidget {
                     children: [
                       Text(
                         notification.type,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: notification.read ? Colors.grey.shade500 : customPink),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color:
+                              notification.read ? Colors.grey.shade500 : customPink,
+                        ),
                       ),
                       if (!notification.read)
-                        const Text('BARU', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
+                        const Text(
+                          'BARU',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
                     ],
                   ),
-                  Text(notification.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                  Text(notification.time, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  Text(
+                    notification.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    notification.time,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
                 ],
               ),
             ),

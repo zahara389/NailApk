@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
 import '../components/helper_widgets.dart';
@@ -27,11 +26,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
   List<GalleryItem> get _filteredItems {
     if (_searchTerm.isEmpty) return widget.galleryItems;
-    final lowerCaseSearch = _searchTerm.toLowerCase();
+
+    final q = _searchTerm.toLowerCase();
     return widget.galleryItems.where((item) =>
-        item.title.toLowerCase().contains(lowerCaseSearch) ||
-        item.designer.toLowerCase().contains(lowerCaseSearch) ||
-        item.tags.any((tag) => tag.contains(lowerCaseSearch))).toList();
+      item.title.toLowerCase().contains(q) ||
+      item.designer.toLowerCase().contains(q) ||
+      item.tags.any((tag) => tag.toLowerCase().contains(q))
+    ).toList();
   }
 
   @override
@@ -40,10 +41,17 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, 
-        title: Text('Inspirasi Galeri (${filteredItems.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.goBack,
+        ),
+        title: Text(
+          'Inspirasi Galeri (${filteredItems.length})',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
+
       body: Column(
         children: [
           // Search Bar
@@ -54,30 +62,45 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 hintText: 'Cari gaya atau tag...',
                 prefixIcon: const Icon(LucideIcons.search, color: Colors.grey),
                 contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide(color: Colors.grey.shade300)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide(color: customPink)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide(color: Colors.grey.shade300)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: customPink),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
               ),
               onChanged: (value) => setState(() => _searchTerm = value),
             ),
           ),
-          
+
           Expanded(
             child: filteredItems.isEmpty
                 ? Center(
                     child: Padding(
                       padding: const EdgeInsets.all(32.0),
-                      child: Text('Tidak ada hasil untuk "$_searchTerm".', style: TextStyle(color: Colors.grey.shade500)),
+                      child: Text(
+                        'Tidak ada hasil untuk "$_searchTerm".',
+                        style: TextStyle(color: Colors.grey.shade500),
+                      ),
                     ),
                   )
-                : MasonryGridView.builder(
-                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 80),
-                    gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                    ),
+                // ====== Stable GridView version (2 columns) ======
+                : GridView.builder(
+                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 80, top: 8),
                     itemCount: filteredItems.length,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      // childAspectRatio: width / height. Adjust for desired card height.
+                      childAspectRatio: 0.72,
+                    ),
                     itemBuilder: (context, index) {
                       return _GalleryCard(
                         item: filteredItems[index],
@@ -106,70 +129,109 @@ class _GalleryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // fallback height when image fails to load
+    final fallbackHeight = 180 + (item.id % 4) * 20;
+
     return InkWell(
       onTap: () => navigate('GalleryDetail', data: item),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-            )
+            BoxShadow(color: Colors.black.withOpacity(0.10), blurRadius: 5),
           ],
+          color: Colors.white,
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Stack(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Image.network(
-                item.imgUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 200 + (item.id % 5) * 20, 
-                  color: customPinkLight,
-                  child: Center(child: Text(item.title, textAlign: TextAlign.center)),
+              // Image area with fixed height so grid doesn't depend on intrinsic image size
+              SizedBox(
+                height: fallbackHeight.toDouble(),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      item.imgUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: customPinkLight,
+                        child: Center(
+                          child: Text(
+                            item.title,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Gradient overlay + text at bottom
+                    Container(
+                      alignment: Alignment.bottomLeft,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            'by ${item.designer}',
+                            style: TextStyle(color: Colors.grey.shade300, fontSize: 10),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Positioned.fill(
-                child: Container(
-                  alignment: Alignment.bottomLeft,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
+
+              // Spacer + metadata row
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
-                      Text('by ${item.designer}', style: TextStyle(color: Colors.grey.shade300, fontSize: 10)),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: InkWell(
-                  onTap: () => toggleFavorite(item.id),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () => toggleFavorite(item.id),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 3)],
+                        ),
+                        child: Icon(
+                          LucideIcons.heart,
+                          size: 16,
+                          color: item.isFavorite ? customPink : Colors.grey.shade400,
+                        ),
+                      ),
                     ),
-                    child: Icon(
-                      LucideIcons.heart,
-                      size: 16,
-                      color: item.isFavorite ? customPink : Colors.grey.shade400,
-                      fill: item.isFavorite ? customPink : null,
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ],

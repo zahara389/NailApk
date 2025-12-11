@@ -38,7 +38,13 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   void initState() {
     super.initState();
-    _profileData = widget.userAddress.copyWith(); 
+    // Perbaikan: Copy manual Address karena copyWith() mungkin belum ada
+    _profileData = Address(
+      name: widget.userAddress.name,
+      phone: widget.userAddress.phone,
+      address: widget.userAddress.address,
+      email: widget.userAddress.email,
+    );
   }
 
   void _handleLogout() {
@@ -47,11 +53,18 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   void _handleSaveProfile(Address newAddress) {
-    _profileData = newAddress;
-    print('Profile saved: ${_profileData.name}');
     setState(() {
+      _profileData = newAddress;
       _isEditMode = false;
     });
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profile berhasil disimpan'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+    print('Profile saved: ${_profileData.name}');
   }
 
   @override
@@ -91,7 +104,10 @@ class _AccountScreenState extends State<AccountScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: widget.goBack),
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: widget.goBack,
+        ),
         title: const Text('Akun Saya', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
@@ -120,7 +136,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
             const SizedBox(height: 24),
 
-            // BAGIAN BARU: Aktivitas
+            // BAGIAN: Aktivitas
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -224,7 +240,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
             const SizedBox(height: 24),
 
-            // BAGIAN BARU: Pengaturan & Dukungan
+            // BAGIAN: Pengaturan & Dukungan
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -386,6 +402,7 @@ class _ProfileEditorState extends State<_ProfileEditor> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _addressController;
+  late TextEditingController _emailController;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -394,6 +411,7 @@ class _ProfileEditorState extends State<_ProfileEditor> {
     _nameController = TextEditingController(text: widget.profileData.name);
     _phoneController = TextEditingController(text: widget.profileData.phone);
     _addressController = TextEditingController(text: widget.profileData.address);
+    _emailController = TextEditingController(text: widget.profileData.email);
     
     _nameController.addListener(_updateData);
     _phoneController.addListener(_updateData);
@@ -405,7 +423,7 @@ class _ProfileEditorState extends State<_ProfileEditor> {
       name: _nameController.text,
       phone: _phoneController.text,
       address: _addressController.text,
-      email: widget.profileData.email,
+      email: widget.profileData.email, // Email tidak bisa diubah
     );
     widget.onUpdate(newAddress);
   }
@@ -415,6 +433,7 @@ class _ProfileEditorState extends State<_ProfileEditor> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -425,7 +444,7 @@ class _ProfileEditorState extends State<_ProfileEditor> {
       child: Column(
         children: [
           _ProfileInput(controller: _nameController, hintText: 'Nama'),
-          _ProfileInput(controller: TextEditingController(text: widget.profileData.email), hintText: 'Email (Cannot change)', isEnabled: false),
+          _ProfileInput(controller: _emailController, hintText: 'Email (Cannot change)', isEnabled: false),
           _ProfileInput(controller: _phoneController, hintText: 'Telepon', keyboardType: TextInputType.phone),
           _ProfileInput(controller: _addressController, hintText: 'Alamat', maxLines: 2),
         ],

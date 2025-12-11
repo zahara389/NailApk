@@ -22,19 +22,17 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  // State Booking
   String _date = '';
   String _time = '';
   String _service = '';
-  String _location = availableLocations.first.key; 
+  String _location = availableLocations.first.key;
 
-  // State Personal Info
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _emailController;
 
   bool _isConfirmed = false;
-  
+
   final List<String> _availableServices = [
     'Manicure Gel Polish',
     'Pedicure Basic',
@@ -91,8 +89,14 @@ class _BookingScreenState extends State<BookingScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: widget.goBack),
-        title: const Text('Booking Layanan Kuku', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.goBack,
+        ),
+        title: const Text(
+          'Booking Layanan Kuku',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -124,18 +128,23 @@ class _BookingScreenState extends State<BookingScreen> {
                 handleSubmit: _handleSubmit,
               ),
       ),
-      bottomNavigationBar: _isConfirmed ? null : Padding(
-        padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).padding.bottom + 16),
-        child: ElevatedButton(
-          onPressed: _handleSubmit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: customPink,
-            minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          child: const Text('Book Now', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-        ),
-      ),
+      bottomNavigationBar: _isConfirmed
+          ? null
+          : Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).padding.bottom + 16),
+              child: ElevatedButton(
+                onPressed: _handleSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: customPink,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text(
+                  'Book Now',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -179,7 +188,6 @@ class _BookingConfirmation extends StatelessWidget {
               const SizedBox(height: 16),
               const Text('Booking Berhasil!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               Text('Appointment Anda telah dikonfirmasi.', style: TextStyle(color: Colors.grey.shade600)),
-              
               const SizedBox(height: 24),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +196,6 @@ class _BookingConfirmation extends StatelessWidget {
                   Text('$customerName | $customerPhone', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   Text(customerEmail, style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey.shade700)),
                   const Divider(height: 16, color: Colors.grey),
-
                   const Text('Lokasi Layanan:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                   Row(
                     children: [
@@ -198,7 +205,6 @@ class _BookingConfirmation extends StatelessWidget {
                     ],
                   ),
                   const Divider(height: 16, color: Colors.grey),
-                  
                   const Text('Layanan & Waktu:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                   Text(service, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: customPink)),
                   Text(
@@ -244,12 +250,20 @@ class _BookingForm extends StatelessWidget {
   final VoidCallback handleSubmit;
 
   const _BookingForm({
-    required this.date, required this.setDate,
-    required this.time, required this.setTime,
-    required this.service, required this.setService,
-    required this.location, required this.setLocation,
-    required this.nameController, required this.phoneController, required this.emailController,
-    required this.services, required this.locations, required this.handleSubmit,
+    required this.date,
+    required this.setDate,
+    required this.time,
+    required this.setTime,
+    required this.service,
+    required this.setService,
+    required this.location,
+    required this.setLocation,
+    required this.nameController,
+    required this.phoneController,
+    required this.emailController,
+    required this.services,
+    required this.locations,
+    required this.handleSubmit,
   });
 
   @override
@@ -257,7 +271,6 @@ class _BookingForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Data Diri
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -294,8 +307,6 @@ class _BookingForm extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-
-        // Pilih Lokasi Studio
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -314,42 +325,42 @@ class _BookingForm extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              ...locations.map((loc) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: InkWell(
-                      onTap: () => setLocation(loc.key),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: loc.key == location ? customPink : Colors.grey.shade300,
+              ...locations.map(
+                (loc) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: InkWell(
+                    onTap: () => setLocation(loc.key),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: loc.key == location ? customPink : Colors.grey.shade300,
+                        ),
+                        color: loc.key == location ? customPinkLight : Colors.white,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(loc.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              Text(loc.address, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                            ],
                           ),
-                          color: loc.key == location ? customPinkLight : Colors.white,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(loc.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                                Text(loc.address, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                              ],
-                            ),
-                            if (loc.key == location)
-                              Icon(LucideIcons.check, size: 18, color: customPink),
-                          ],
-                        ),
+                          if (loc.key == location)
+                            Icon(LucideIcons.check, size: 18, color: customPink),
+                        ],
                       ),
                     ),
-                  )).toList(),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 24),
-
-        // Layanan, Tanggal, dan Waktu
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -366,7 +377,9 @@ class _BookingForm extends StatelessWidget {
                 decoration: const InputDecoration(labelText: 'Layanan Kuku'),
                 value: service.isEmpty ? null : service,
                 onChanged: (val) => setService(val!),
-                items: services.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                items: services
+                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                    .toList(),
               ),
               const SizedBox(height: 16),
               Row(
@@ -396,7 +409,9 @@ class _BookingForm extends StatelessWidget {
                       decoration: const InputDecoration(labelText: 'Waktu'),
                       value: time.isEmpty ? null : time,
                       onChanged: (val) => setTime(val!),
-                      items: ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                      items: ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30']
+                          .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                          .toList(),
                     ),
                   ),
                 ],

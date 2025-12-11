@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
 import '../components/product_card.dart';
-import '../components/helper_widgets.dart';
 
 class AllProductsScreen extends StatelessWidget {
   final VoidCallback goBack;
@@ -25,6 +24,7 @@ class AllProductsScreen extends StatelessWidget {
     final updatedList = newArrivals.map((p) {
       if (p.id == productId) {
         wasFavorite = p.isFavorite;
+        // Gunakan copyWith untuk update isFavorite
         return p.copyWith(isFavorite: !p.isFavorite);
       }
       return p;
@@ -39,7 +39,10 @@ class AllProductsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: goBack),
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: goBack,
+        ),
         title: Text('Semua Produk (${newArrivals.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: false,
       ),

@@ -50,9 +50,13 @@ class _HelpFAQScreenState extends State<HelpFAQScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: widget.goBack),
-        title: const Text('Bantuan & FAQ', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.goBack,
+        ),
+        title: const Text('Bantuan & FAQ', style: TextStyle(fontWeight: FontWeight.bold)),
+        elevation: 0.5,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -164,8 +168,8 @@ class _FAQItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(child: Text(item['q']!, style: const TextStyle(fontWeight: FontWeight.w600))),
-                RotationTransition(
-                  turns: AlwaysStoppedAnimation(isOpen ? 90 / 360 : 0),
+                Transform.rotate(
+                  angle: isOpen ? 90 * 3.1415926535 / 180 : 0, // rotate 90 degrees when open
                   child: Icon(LucideIcons.chevronRight, size: 20, color: customPink),
                 ),
               ],

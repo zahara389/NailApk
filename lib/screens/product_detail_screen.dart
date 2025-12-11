@@ -10,6 +10,7 @@ class ProductDetailScreen extends StatefulWidget {
   final Function(Product) handleAddToCart;
   final int cartCount;
   final Function(List<Product>) setNewArrivals;
+  final List<Product> newArrivals; // ← DITAMBAHKAN
 
   const ProductDetailScreen({
     super.key,
@@ -19,6 +20,7 @@ class ProductDetailScreen extends StatefulWidget {
     required this.handleAddToCart,
     required this.cartCount,
     required this.setNewArrivals,
+    required this.newArrivals, // ← DITAMBAHKAN
   });
 
   @override
@@ -45,22 +47,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
+  // FIXED FAVORITE LOGIC
   void _handlePdpFavoriteToggle() {
     if (widget.product == null) return;
+
     final newState = !_isFavorite;
+
     setState(() {
       _isFavorite = newState;
     });
 
-    widget.setNewArrivals((prevArrivals) {
-      final updatedList = prevArrivals.map((p) {
-        if (p.id == widget.product!.id) {
-          return p.copyWith(isFavorite: newState);
-        }
-        return p;
-      }).toList();
-      return updatedList;
-    });
+    // FIX: langsung kirim LIST, bukan FUNCTION
+    final updatedList = widget.newArrivals.map((p) {
+      if (p.id == widget.product!.id) {
+        return p.copyWith(isFavorite: newState);
+      }
+      return p;
+    }).toList();
+
+    widget.setNewArrivals(updatedList);
 
     if (newState) {
       widget.navigate('Favorites');
@@ -83,7 +88,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           CustomScrollView(
             slivers: [
               SliverAppBar(
-                leading: BackButtonIcon(onBack: widget.goBack),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: widget.goBack,
+                ),
                 actions: [
                   InkWell(
                     onTap: () => widget.navigate('Cart'),
@@ -122,9 +130,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 pinned: true,
                 floating: true,
               ),
+
+              // MAIN CONTENT
               SliverList(
                 delegate: SliverChildListDelegate([
-                  // Gambar Produk
                   Container(
                     width: double.infinity,
                     height: 300,
@@ -134,7 +143,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         product.imageUrl,
                         height: 250,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => const Center(child: Text('Product Image')),
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(child: Text('Product Image')),
                       ),
                     ),
                   ),
@@ -144,53 +154,80 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(product.brand.toUpperCase(), style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
+                        Text(product.brand.toUpperCase(),
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.grey.shade500)),
                         const SizedBox(height: 4),
-                        Text(product.name, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                        Text(product.name,
+                            style: const TextStyle(
+                                fontSize: 28, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
 
-                        // Harga
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
                           children: [
-                            Text(formatRupiah(priceDiscounted), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
+                            Text(formatRupiah(priceDiscounted),
+                                style: const TextStyle(
+                                    fontSize: 28, fontWeight: FontWeight.w900)),
                             const SizedBox(width: 8),
-                            Text(formatRupiah(priceOriginal), style: TextStyle(fontSize: 18, color: Colors.grey.shade400, decoration: TextDecoration.lineThrough)),
+                            Text(formatRupiah(priceOriginal),
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey.shade400,
+                                    decoration: TextDecoration.lineThrough)),
                             const SizedBox(width: 8),
-                            const Text('20% OFF', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
+                            const Text('20% OFF',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red)),
                           ],
                         ),
                         const SizedBox(height: 16),
 
-                        // Stok Tersedia
+                        // STOCK
                         Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(border: Border(top: BorderSide(color: Colors.grey.shade200), bottom: BorderSide(color: Colors.grey.shade200))),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: Colors.grey.shade200),
+                              bottom: BorderSide(color: Colors.grey.shade200),
+                            ),
+                          ),
                           child: Row(
                             children: [
-                              Text('Stok Tersedia:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
+                              Text('Stok Tersedia:',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade700)),
                               const SizedBox(width: 8),
-                              Text('$_stockAvailable unit', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.green)),
+                              Text('$_stockAvailable unit',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green)),
                             ],
                           ),
                         ),
                         const SizedBox(height: 16),
 
-                        // Deskripsi
                         Text(
-                          'Gel Polish ini memberikan warna putih yang sempurna untuk French Manicure atau sebagai lapisan dasar untuk nail art. Formula yang cepat kering dan tahan lama hingga 3 minggu.',
-                          style: TextStyle(color: Colors.grey.shade700, height: 1.5),
+                          'Gel Polish ini memberikan warna putih yang sempurna untuk French Manicure...',
+                          style:
+                              TextStyle(color: Colors.grey.shade700, height: 1.5),
                         ),
                         const SizedBox(height: 24),
 
-                        // Detail Produk
-                        const Text('Detail Produk', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const Text('Detail Produk',
+                            style:
+                                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
+
                         const Padding(
                           padding: EdgeInsets.only(left: 8.0),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _DetailBullet(text: 'Vegan & Cruelty-Free'),
                               _DetailBullet(text: 'Perlu Lampu UV/LED'),
@@ -198,7 +235,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 100), // Ruang bawah
+
+                        const SizedBox(height: 100),
                       ],
                     ),
                   ),
@@ -206,16 +244,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ],
           ),
-          // Bottom Bar: Favorite and Add to Cart
+
+          // BOTTOM BAR
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
+              padding: EdgeInsets.fromLTRB(
+                  16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.1), blurRadius: 10)
+                ],
               ),
               child: Row(
                 children: [
@@ -224,27 +267,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        border: Border.all(color: _isFavorite ? customPink : Colors.grey.shade300),
+                        border: Border.all(
+                            color: _isFavorite
+                                ? customPink
+                                : Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         LucideIcons.heart,
                         size: 24,
-                        color: _isFavorite ? customPink : Colors.grey.shade600,
-                        fill: _isFavorite ? customPink : null,
+                        color:
+                            _isFavorite ? customPink : Colors.grey.shade600,
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _stockAvailable == 0 ? null : _handleAddToCartClick,
+                      onPressed:
+                          _stockAvailable == 0 ? null : _handleAddToCartClick,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: customPink,
                         minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: Text(_stockAvailable == 0 ? 'Out of Stock' : 'Add to Cart', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        _stockAvailable == 0
+                            ? 'Out of Stock'
+                            : 'Add to Cart',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
@@ -266,16 +322,23 @@ class _DetailBullet extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             margin: const EdgeInsets.only(top: 6),
             width: 5,
             height: 5,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey.shade600),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey.shade600,
+            ),
           ),
           const SizedBox(width: 8),
-          Expanded(child: Text(text, style: TextStyle(color: Colors.grey.shade600))),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
         ],
       ),
     );

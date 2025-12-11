@@ -90,10 +90,9 @@ class ProductCard extends StatelessWidget {
                         ],
                       ),
                       child: Icon(
-                        LucideIcons.heart,
+                        product.isFavorite ? Icons.favorite : Icons.favorite_border,
                         size: 16,
                         color: product.isFavorite ? customPink : Colors.grey.shade400,
-                        fill: product.isFavorite ? customPink : null, 
                       ),
                     ),
                   ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
-import '../components/helper_widgets.dart';
 
 class BookingHistoryScreen extends StatelessWidget {
   final VoidCallback goBack;
@@ -32,7 +31,10 @@ class BookingHistoryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: goBack),
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: goBack,
+        ),
         title: const Text('Riwayat Booking', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
       ),

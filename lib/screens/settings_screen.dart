@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
-import '../components/helper_widgets.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback goBack;
@@ -36,27 +35,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        leading: BackButtonIcon(onBack: widget.goBack),
-        title: const Text('Pengaturan Umum', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft),
+          onPressed: widget.goBack,
+        ),
+        title: const Text(
+          'Pengaturan Umum',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
+        elevation: 1,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Bagian Notifikasi
+            // NOTIFIKASI
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 5,
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Notifikasi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Notifikasi',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   const Divider(color: Colors.grey, height: 16),
                   _SettingToggle(
                     title: "Notifikasi Email",
@@ -75,21 +89,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
 
-            // Bagian Akses Data & Tema
+            // DATA & THEME
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 5,
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Akses Data', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Akses Data',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   const Divider(color: Colors.grey, height: 16),
+
                   _SettingToggle(
                     title: "Akses Lokasi",
                     description: "Izinkan akses untuk menemukan studio terdekat.",
@@ -97,24 +121,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     checked: _locationAccess,
                     onToggle: _handleToggle,
                   ),
-                  const Divider(color: Colors.grey, height: 16),
-                  
-                  const Text('Pilih Tema', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+
+                  const Divider(color: Colors.grey, height: 20),
+
+                  const Text(
+                    'Pilih Tema',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(height: 8),
+
                   DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12)),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
                     value: _theme,
                     onChanged: (val) {
                       if (val != null) setState(() => _theme = val);
                     },
                     items: const [
-                      DropdownMenuItem(value: 'light', child: Text('Light Mode (Default)')),
-                      DropdownMenuItem(value: 'dark', child: Text('Dark Mode (Simulasi)')),
+                      DropdownMenuItem(
+                        value: 'light',
+                        child: Text('Light Mode (Default)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'dark',
+                        child: Text('Dark Mode (Simulasi)'),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 50),
           ],
         ),
@@ -149,9 +188,15 @@ class _SettingToggle extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
                 if (description != null)
-                  Text(description!, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                  Text(
+                    description!,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
               ],
             ),
           ),

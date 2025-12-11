@@ -27,7 +27,7 @@ class RegisterScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Bentuk Lingkaran Pink di Kiri Atas
+          // Background Lingkaran Pink
           Positioned(
             top: -150,
             left: -150,
@@ -40,64 +40,98 @@ class RegisterScreen extends StatelessWidget {
               ),
             ),
           ),
+
           CustomScrollView(
             slivers: [
+              // -----------------------------
+              // FIX BACK BUTTON — TANPA ERROR
+              // -----------------------------
               SliverAppBar(
-                leading: BackButtonIcon(onBack: goBack),
+                leading: IconButton(
+                  icon: const Icon(LucideIcons.arrowLeft, size: 24),
+                  onPressed: goBack,
+                ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 pinned: false,
                 floating: true,
               ),
+
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     const SizedBox(height: 30),
+
                     const Text(
                       'Create account',
-                      style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black),
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
+
                     const SizedBox(height: 8),
+
                     Text(
                       'Lengkapi detail Anda.',
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 14,
+                      ),
                     ),
+
                     const SizedBox(height: 40),
 
-                    // Input Nama
+                    // Nama
                     TextFormField(
                       decoration: InputDecoration(
                         hintText: 'Nama',
                         contentPadding: const EdgeInsets.only(bottom: 12),
-                        border: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: customPink)),
+                        border: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: customPink),
+                        ),
                       ),
                     ),
+
                     const SizedBox(height: 24),
 
-                    // Input Email
+                    // Email
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: 'Email',
                         contentPadding: const EdgeInsets.only(bottom: 12),
-                        border: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: customPink)),
+                        border: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: customPink),
+                        ),
                       ),
                     ),
+
                     const SizedBox(height: 24),
 
-                    // Input Password
+                    // Password
                     TextFormField(
                       obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Password',
                         contentPadding: const EdgeInsets.only(bottom: 12),
-                        border: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: customPink)),
+                        border: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: customPink),
+                        ),
                       ),
                     ),
+
                     const SizedBox(height: 60),
 
                     // Tombol Sign Up
@@ -106,48 +140,78 @@ class RegisterScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: customPink,
                         minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 5,
                         shadowColor: customPink.withOpacity(0.4),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('Sign up', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Sign up',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(width: 8),
-                          Icon(LucideIcons.chevronRight, size: 20, color: Colors.white),
+                          const Icon(
+                            LucideIcons.chevronRight,
+                            size: 20,
+                            color: Colors.white,
+                          ),
                         ],
                       ),
                     ),
+
                     const SizedBox(height: 24),
 
-                    // Tautan Sign In
+                    // Sign In Link
                     Center(
                       child: InkWell(
                         onTap: () => navigate('Login'),
                         child: RichText(
                           text: TextSpan(
                             text: "Already have an account? ",
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                            ),
                             children: [
                               TextSpan(
                                 text: 'Sign in',
-                                style: TextStyle(color: customPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                                style: TextStyle(
+                                  color: customPink,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 24),
 
-                    // Tombol Lanjut sebagai Guest
+                    // Tombol Guest
                     Center(
                       child: TextButton(
                         onPressed: _handleGuestLogin,
-                        child: Text('Lanjut sebagai Guest', style: TextStyle(color: Colors.grey.shade500, fontSize: 14, decoration: TextDecoration.underline)),
+                        child: Text(
+                          'Lanjut sebagai Guest',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 14,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
                       ),
                     ),
+
                     const SizedBox(height: 50),
                   ]),
                 ),
