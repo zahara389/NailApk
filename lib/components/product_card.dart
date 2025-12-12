@@ -51,10 +51,19 @@ class ProductCard extends StatelessWidget {
                     color: Colors.grey.shade50,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   ),
-                  child: Image.network(
-                    product.imageUrl,
+                  child: Image.asset(
+                    'assets/images/product${product.id}.jpeg',
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Center(child: Text('Image Error')),
+                    errorBuilder: (context, error, stackTrace) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.image_not_supported, color: Colors.grey.shade400),
+                          const SizedBox(height: 8),
+                          Text('Image Error\n${product.id}', style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 // Badge Limited Edition
