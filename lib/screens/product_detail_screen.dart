@@ -146,13 +146,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       height: 300,
                       color: Colors.grey.shade50,
                       child: Center(
-                        child: Image.network(
-                          product.imageUrl,
-                          height: 250,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Center(child: Text('Product Image')),
-                        ),
+                        child: _ProductImage(imageUrl: product.imageUrl),
                       ),
                     ),
 
@@ -342,6 +336,35 @@ class _DetailBullet extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ProductImage extends StatelessWidget {
+  final String imageUrl;
+  const _ProductImage({required this.imageUrl});
+
+  bool get _isNetwork => imageUrl.startsWith('http');
+
+  @override
+  Widget build(BuildContext context) {
+    final commonFit = BoxFit.contain;
+    final commonHeight = 250.0;
+
+    if (_isNetwork) {
+      return Image.network(
+        imageUrl,
+        height: commonHeight,
+        fit: commonFit,
+        errorBuilder: (context, error, stackTrace) => const Text('Product Image'),
+      );
+    }
+
+    return Image.asset(
+      imageUrl,
+      height: commonHeight,
+      fit: commonFit,
+      errorBuilder: (context, error, stackTrace) => const Text('Product Image'),
     );
   }
 }
