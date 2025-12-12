@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 // Screens
 import 'screens/account_screen.dart';
@@ -199,7 +198,6 @@ class _AppRouterState extends State<AppRouter> {
           newArrivals: _newArrivals,
           setNewArrivals: (list) => setState(() => _newArrivals = list),
           handleAddToCart: handleAddToCart,
-          currentView: _currentView,
         );
 
       case 'PDP':

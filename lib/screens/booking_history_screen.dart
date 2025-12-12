@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
 
-class BookingHistoryScreen extends StatelessWidget {
+class BookingHistoryScreen extends StatefulWidget {
   final VoidCallback goBack;
   final Function(String, {dynamic data}) navigate;
   final List<Booking> history;
@@ -14,17 +14,11 @@ class BookingHistoryScreen extends StatelessWidget {
     required this.history,
   });
 
-  Color _getStatusColor(String status) {
-    if (status == 'Completed') return Colors.green.shade600;
-    if (status == 'Confirmed') return customPink;
-    return Colors.orange.shade600;
-  }
-  
-  Color _getStatusBgColor(String status) {
-    if (status == 'Completed') return Colors.green.shade100;
-    if (status == 'Confirmed') return customPinkLight;
-    return Colors.orange.shade100;
-  }
+  @override
+  State<BookingHistoryScreen> createState() => _BookingHistoryScreenState();
+}
+
+class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
@@ -32,101 +26,96 @@ class BookingHistoryScreen extends StatelessWidget {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
-          onPressed: goBack,
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.goBack,
         ),
-        title: const Text('Riwayat Booking', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        title: const Text(
+          'Riwayat Booking',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
-      body: history.isEmpty
+      body: widget.history.isEmpty
           ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Container(
-                  padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(LucideIcons.calendar, size: 60, color: Colors.grey.shade400),
+                  const SizedBox(height: 16),
+                  const Text('Belum ada booking', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text('Booking layanan kuku Anda akan muncul di sini.', style: TextStyle(color: Colors.grey.shade500)),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => widget.navigate('Booking'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: customPink,
+                      minimumSize: const Size(200, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Buat Booking Baru', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: widget.history.length,
+              itemBuilder: (context, index) {
+                final booking = widget.history[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
                   ),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(LucideIcons.clock, size: 48, color: Colors.grey.shade400),
-                      const SizedBox(height: 16),
-                      Text('Anda belum memiliki riwayat booking.', style: TextStyle(color: Colors.grey.shade500)),
-                      TextButton(
-                        onPressed: () => navigate('Booking'),
-                        child: Text('Buat Booking Baru', style: TextStyle(color: customPink, decoration: TextDecoration.underline)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Booking #${booking.id}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: booking.status == 'Confirmed' ? Colors.green.shade100 : Colors.orange.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              booking.status,
+                              style: TextStyle(
+                                color: booking.status == 'Confirmed' ? Colors.green.shade800 : Colors.orange.shade800,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(booking.service, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: customPink)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(LucideIcons.calendar, size: 16, color: Colors.grey.shade600),
+                          const SizedBox(width: 8),
+                          Text('${booking.date} at ${booking.time}', style: TextStyle(color: Colors.grey.shade700)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(LucideIcons.mapPin, size: 16, color: Colors.grey.shade600),
+                          const SizedBox(width: 8),
+                          Text(booking.location, style: TextStyle(color: Colors.grey.shade700)),
+                        ],
                       ),
                     ],
                   ),
-                ),
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: history.map((booking) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
-                          border: Border(left: BorderSide(color: customPink, width: 4)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(booking.service, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                                    Text('#${booking.id}', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: _getStatusBgColor(booking.status),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    booking.status,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _getStatusColor(booking.status)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Divider(color: Colors.grey.shade100, height: 1),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(LucideIcons.calendar, size: 14, color: Colors.grey.shade600),
-                                const SizedBox(width: 8),
-                                Text('${booking.date} | ${booking.time}', style: TextStyle(color: Colors.grey.shade800)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(LucideIcons.mapPin, size: 14, color: Colors.grey.shade600),
-                                const SizedBox(width: 8),
-                                Text(booking.location, style: TextStyle(color: Colors.grey.shade800)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    )).toList(),
-              ),
+                );
+              },
             ),
     );
   }

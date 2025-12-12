@@ -85,6 +85,10 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedLocationData = availableLocations.firstWhere((l) => l.key == _location);
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomNavHeight = 60.0;
+    final buttonHeight = 72.0; // 56px button + 16px padding
+    final totalBottomSpace = bottomNavHeight + buttonHeight + bottomPadding;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -98,53 +102,69 @@ class _BookingScreenState extends State<BookingScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: _isConfirmed
-            ? _BookingConfirmation(
-                service: _service,
-                date: _date,
-                time: _time,
-                locationName: selectedLocationData.name,
-                customerName: _nameController.text,
-                customerPhone: _phoneController.text,
-                customerEmail: _emailController.text,
-                navigate: widget.navigate,
-              )
-            : _BookingForm(
-                date: _date,
-                setDate: (val) => setState(() => _date = val),
-                time: _time,
-                setTime: (val) => setState(() => _time = val),
-                service: _service,
-                setService: (val) => setState(() => _service = val),
-                location: _location,
-                setLocation: (val) => setState(() => _location = val),
-                nameController: _nameController,
-                phoneController: _phoneController,
-                emailController: _emailController,
-                services: _availableServices,
-                locations: availableLocations,
-                handleSubmit: _handleSubmit,
-              ),
-      ),
-      bottomNavigationBar: _isConfirmed
-          ? null
-          : Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).padding.bottom + 16),
-              child: ElevatedButton(
-                onPressed: _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: customPink,
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: _isConfirmed ? 16.0 : totalBottomSpace,
+            ),
+            child: _isConfirmed
+                ? _BookingConfirmation(
+                    service: _service,
+                    date: _date,
+                    time: _time,
+                    locationName: selectedLocationData.name,
+                    customerName: _nameController.text,
+                    customerPhone: _phoneController.text,
+                    customerEmail: _emailController.text,
+                    navigate: widget.navigate,
+                  )
+                : _BookingForm(
+                    date: _date,
+                    setDate: (val) => setState(() => _date = val),
+                    time: _time,
+                    setTime: (val) => setState(() => _time = val),
+                    service: _service,
+                    setService: (val) => setState(() => _service = val),
+                    location: _location,
+                    setLocation: (val) => setState(() => _location = val),
+                    nameController: _nameController,
+                    phoneController: _phoneController,
+                    emailController: _emailController,
+                    services: _availableServices,
+                    locations: availableLocations,
+                    handleSubmit: _handleSubmit,
+                  ),
+          ),
+          if (!_isConfirmed)
+            Positioned(
+              bottom: bottomNavHeight + bottomPadding,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
                 ),
-                child: const Text(
-                  'Book Now',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                child: ElevatedButton(
+                  onPressed: _handleSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: customPink,
+                    minimumSize: const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'Book Now',
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ),
+        ],
+      ),
     );
   }
 }
@@ -265,6 +285,16 @@ class _BookingForm extends StatelessWidget {
     required this.locations,
     required this.handleSubmit,
   });
+
+  String _formatDate(String isoDate) {
+    if (isoDate.isEmpty) return 'Pilih Tanggal';
+    final date = DateTime.parse(isoDate);
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -397,9 +427,44 @@ class _BookingForm extends StatelessWidget {
                           setDate(pickedDate.toIso8601String().split('T')[0]);
                         }
                       },
-                      child: InputDecorator(
-                        decoration: const InputDecoration(labelText: 'Tanggal', border: OutlineInputBorder()),
-                        child: Text(date.isEmpty ? 'Pilih Tanggal' : date),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tanggal',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  date.isEmpty 
+                                    ? 'Pilih Tanggal' 
+                                    : _formatDate(date),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: date.isEmpty ? Colors.grey.shade400 : Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(
+                              LucideIcons.calendar,
+                              size: 20,
+                              color: Colors.grey.shade600,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

@@ -10,7 +10,7 @@ class ProductDetailScreen extends StatefulWidget {
   final Function(Product) handleAddToCart;
   final int cartCount;
   final Function(List<Product>) setNewArrivals;
-  final List<Product> newArrivals; // ← DITAMBAHKAN
+  final List<Product> newArrivals;
 
   const ProductDetailScreen({
     super.key,
@@ -20,7 +20,7 @@ class ProductDetailScreen extends StatefulWidget {
     required this.handleAddToCart,
     required this.cartCount,
     required this.setNewArrivals,
-    required this.newArrivals, // ← DITAMBAHKAN
+    required this.newArrivals,
   });
 
   @override
@@ -47,7 +47,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  // FIXED FAVORITE LOGIC
   void _handlePdpFavoriteToggle() {
     if (widget.product == null) return;
 
@@ -57,7 +56,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _isFavorite = newState;
     });
 
-    // FIX: langsung kirim LIST, bukan FUNCTION
     final updatedList = widget.newArrivals.map((p) {
       if (p.id == widget.product!.id) {
         return p.copyWith(isFavorite: newState);
@@ -81,6 +79,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final product = widget.product!;
     final priceOriginal = product.price;
     final priceDiscounted = (priceOriginal * (1 - _discountRate)).round();
+    
+    // Hitung tinggi total bottom bars
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomNavHeight = 60.0; // tinggi bottom navigation
+    final actionBarHeight = 82.0; // tinggi action bar (padding + button)
+    final totalBottomHeight = bottomNavHeight + actionBarHeight + bottomPadding;
 
     return Scaffold(
       body: Stack(
@@ -88,6 +92,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           CustomScrollView(
             slivers: [
               SliverAppBar(
+                automaticallyImplyLeading: false,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: widget.goBack,
@@ -131,134 +136,130 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 floating: true,
               ),
 
-              // MAIN CONTENT
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  Container(
-                    width: double.infinity,
-                    height: 300,
-                    color: Colors.grey.shade50,
-                    child: Center(
-                      child: Image.network(
-                        product.imageUrl,
-                        height: 250,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Center(child: Text('Product Image')),
+              // MAIN CONTENT dengan padding bottom yang cukup
+              SliverPadding(
+                padding: EdgeInsets.only(bottom: totalBottomHeight),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    Container(
+                      width: double.infinity,
+                      height: 300,
+                      color: Colors.grey.shade50,
+                      child: Center(
+                        child: Image.network(
+                          product.imageUrl,
+                          height: 250,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Center(child: Text('Product Image')),
+                        ),
                       ),
                     ),
-                  ),
 
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(product.brand.toUpperCase(),
-                            style:
-                                TextStyle(fontSize: 14, color: Colors.grey.shade500)),
-                        const SizedBox(height: 4),
-                        Text(product.name,
-                            style: const TextStyle(
-                                fontSize: 28, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(product.brand.toUpperCase(),
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.grey.shade500)),
+                          const SizedBox(height: 4),
+                          Text(product.name,
+                              style: const TextStyle(
+                                  fontSize: 28, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
 
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(formatRupiah(priceDiscounted),
-                                style: const TextStyle(
-                                    fontSize: 28, fontWeight: FontWeight.w900)),
-                            const SizedBox(width: 8),
-                            Text(formatRupiah(priceOriginal),
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey.shade400,
-                                    decoration: TextDecoration.lineThrough)),
-                            const SizedBox(width: 8),
-                            const Text('20% OFF',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red)),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // STOCK
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              top: BorderSide(color: Colors.grey.shade200),
-                              bottom: BorderSide(color: Colors.grey.shade200),
-                            ),
-                          ),
-                          child: Row(
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
                             children: [
-                              Text('Stok Tersedia:',
+                              Text(formatRupiah(priceDiscounted),
+                                  style: const TextStyle(
+                                      fontSize: 28, fontWeight: FontWeight.w900)),
+                              const SizedBox(width: 8),
+                              Text(formatRupiah(priceOriginal),
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.grey.shade400,
+                                      decoration: TextDecoration.lineThrough)),
+                              const SizedBox(width: 8),
+                              const Text('20% OFF',
                                   style: TextStyle(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey.shade700)),
-                              const SizedBox(width: 8),
-                              Text('$_stockAvailable unit',
-                                  style: const TextStyle(
-                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green)),
+                                      color: Colors.red)),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        Text(
-                          'Gel Polish ini memberikan warna putih yang sempurna untuk French Manicure...',
-                          style:
-                              TextStyle(color: Colors.grey.shade700, height: 1.5),
-                        ),
-                        const SizedBox(height: 24),
+                          // STOCK
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                top: BorderSide(color: Colors.grey.shade200),
+                                bottom: BorderSide(color: Colors.grey.shade200),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Text('Stok Tersedia:',
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey.shade700)),
+                                const SizedBox(width: 8),
+                                Text('$_stockAvailable unit',
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green)),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-                        const Text('Detail Produk',
+                          Text(
+                            'Gel Polish ini memberikan warna putih yang sempurna untuk French Manicure...',
                             style:
-                                TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-
-                        const Padding(
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: Column(
-                            children: [
-                              _DetailBullet(text: 'Vegan & Cruelty-Free'),
-                              _DetailBullet(text: 'Perlu Lampu UV/LED'),
-                              _DetailBullet(text: 'Dibuat di USA'),
-                            ],
+                                TextStyle(color: Colors.grey.shade700, height: 1.5),
                           ),
-                        ),
+                          const SizedBox(height: 24),
 
-                        const SizedBox(height: 100),
-                      ],
+                          const Text('Detail Produk',
+                              style:
+                                  TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
+
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Column(
+                              children: [
+                                _DetailBullet(text: 'Vegan & Cruelty-Free'),
+                                _DetailBullet(text: 'Perlu Lampu UV/LED'),
+                                _DetailBullet(text: 'Dibuat di USA'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ]),
+                  ]),
+                ),
               ),
             ],
           ),
 
-          // BOTTOM BAR
+          // BOTTOM ACTION BAR - di atas bottom navigation
           Positioned(
-            bottom: 0,
+            bottom: bottomNavHeight + bottomPadding,
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(
-                  16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.1), blurRadius: 10)
-                ],
               ),
               child: Row(
                 children: [
