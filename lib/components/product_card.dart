@@ -144,8 +144,7 @@ class ProductCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        // Pastikan fungsi formatRupiah ada atau ganti manual sementara
-                        "Rp ${product.price}", 
+                        formatRupiah(product.price),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       InkWell(
