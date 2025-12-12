@@ -3,63 +3,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
 import '../components/helper_widgets.dart';
 
-// ===============================
-// MODEL YANG DIPERLUKAN
-// ===============================
-class Booking {
-  final String id;
-  final String date;
-  final String time;
-  final String service;
-  final String location;
-  final String status;
-
-  Booking({
-    required this.id,
-    required this.date,
-    required this.time,
-    required this.service,
-    required this.location,
-    required this.status,
-  });
-}
-
-class Location {
-  final String key;
-  final String name;
-  final String address;
-
-  Location({
-    required this.key,
-    required this.name,
-    required this.address,
-  });
-}
-
-// ===============================
-// DUMMY LOCATION
-// ===============================
-final List<Location> availableLocations = [
-  Location(
-    key: 'STUDIO_A',
-    name: 'Nail Studio - Jakarta Pusat',
-    address: 'Jl. Melati No. 12, Jakarta Pusat',
-  ),
-  Location(
-    key: 'STUDIO_B',
-    name: 'Nail Studio - BSD',
-    address: 'The Breeze, BSD City',
-  ),
-  Location(
-    key: 'STUDIO_C',
-    name: 'Nail Studio - Bandung',
-    address: 'Jl. Riau No. 22, Bandung',
-  ),
-];
-
-// ===============================
-// BOOKING SCREEN
-// ===============================
 class BookingScreen extends StatefulWidget {
   final VoidCallback goBack;
   final Function(String, {dynamic data}) navigate;
@@ -100,11 +43,9 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(
-      text: widget.userName == 'Guest' ? '' : widget.userName,
-    );
-    _phoneController = TextEditingController(text: '');
-    _emailController = TextEditingController(text: '');
+    _nameController = TextEditingController(text: widget.userName == 'Guest' ? '' : widget.userName);
+    _phoneController = TextEditingController(text: '081234567890');
+    _emailController = TextEditingController(text: 'sarah.nail@mail.com');
   }
 
   @override
@@ -116,38 +57,38 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   void _handleSubmit() {
-    if (_date.isEmpty ||
-        _time.isEmpty ||
-        _service.isEmpty ||
-        _location.isEmpty ||
-        _nameController.text.isEmpty) {
+    if (_date.isEmpty || _time.isEmpty || _service.isEmpty || _location.isEmpty || _nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Mohon lengkapi semua detail booking.')),
       );
       return;
     }
 
-    final locationData =
-        availableLocations.firstWhere((l) => l.key == _location);
+    final selectedLocationData = availableLocations.firstWhere((l) => l.key == _location);
 
-    final booking = Booking(
-      id: 'BKG${DateTime.now().millisecondsSinceEpoch}',
+    final newBooking = Booking(
+      id: 'BKG${(DateTime.now().millisecondsSinceEpoch % 10000).toString().padLeft(4, '0')}',
       date: _date,
       time: _time,
       service: _service,
-      location: locationData.name,
+      location: selectedLocationData.name,
       status: 'Confirmed',
     );
 
-    widget.addBookingToHistory(booking);
+    widget.addBookingToHistory(newBooking);
 
-    setState(() => _isConfirmed = true);
+    setState(() {
+      _isConfirmed = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final selectedLocation =
-        availableLocations.firstWhere((l) => l.key == _location);
+    final selectedLocationData = availableLocations.firstWhere((l) => l.key == _location);
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomNavHeight = 60.0;
+    final buttonHeight = 72.0; // 56px button + 16px padding
+    final totalBottomSpace = bottomNavHeight + buttonHeight + bottomPadding;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -156,23 +97,26 @@ class _BookingScreenState extends State<BookingScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: widget.goBack,
         ),
-        title: const Text('Booking Layanan Kuku'),
+        title: const Text(
+          'Booking Layanan Kuku',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: Stack(
         children: [
           SingleChildScrollView(
             padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 16,
-              bottom: _isConfirmed ? 16 : 130,
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: _isConfirmed ? 16.0 : totalBottomSpace,
             ),
             child: _isConfirmed
                 ? _BookingConfirmation(
                     service: _service,
                     date: _date,
                     time: _time,
-                    locationName: selectedLocation.name,
+                    locationName: selectedLocationData.name,
                     customerName: _nameController.text,
                     customerPhone: _phoneController.text,
                     customerEmail: _emailController.text,
@@ -180,44 +124,41 @@ class _BookingScreenState extends State<BookingScreen> {
                   )
                 : _BookingForm(
                     date: _date,
-                    setDate: (v) => setState(() => _date = v),
+                    setDate: (val) => setState(() => _date = val),
                     time: _time,
-                    setTime: (v) => setState(() => _time = v),
+                    setTime: (val) => setState(() => _time = val),
                     service: _service,
-                    setService: (v) => setState(() => _service = v),
+                    setService: (val) => setState(() => _service = val),
                     location: _location,
-                    setLocation: (v) => setState(() => _location = v),
+                    setLocation: (val) => setState(() => _location = val),
                     nameController: _nameController,
                     phoneController: _phoneController,
                     emailController: _emailController,
                     services: _availableServices,
                     locations: availableLocations,
+                    handleSubmit: _handleSubmit,
                   ),
           ),
-
-          // BOTTOM BUTTON
           if (!_isConfirmed)
             Positioned(
-              bottom: 70,
+              bottom: bottomNavHeight + bottomPadding,
               left: 0,
               right: 0,
-              child: Padding(
+              child: Container(
                 padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                ),
                 child: ElevatedButton(
                   onPressed: _handleSubmit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: customPink,
                     minimumSize: const Size(double.infinity, 56),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: const Text(
                     'Book Now',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -228,9 +169,6 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 }
 
-// ===============================
-// BOOKING CONFIRMATION
-// ===============================
 class _BookingConfirmation extends StatelessWidget {
   final String service;
   final String date;
@@ -254,8 +192,6 @@ class _BookingConfirmation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatted = DateTime.tryParse(date);
-
     return Column(
       children: [
         Container(
@@ -263,57 +199,42 @@ class _BookingConfirmation extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.black.withOpacity(0.08), blurRadius: 10)
-            ],
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
             border: Border(top: BorderSide(color: customPink, width: 4)),
           ),
           child: Column(
             children: [
               Icon(LucideIcons.checkCircle, size: 48, color: customPink),
               const SizedBox(height: 16),
-              const Text(
-                'Booking Berhasil!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'Appointment Anda telah dikonfirmasi.',
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
+              const Text('Booking Berhasil!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              Text('Appointment Anda telah dikonfirmasi.', style: TextStyle(color: Colors.grey.shade600)),
               const SizedBox(height: 24),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Data Pelanggan:',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    Text(customerName,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(customerPhone),
-                    Text(customerEmail),
-                    const Divider(),
-                    const Text('Lokasi Studio:',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    Text(locationName,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const Divider(),
-                    const Text('Layanan & Waktu:',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    Text(service,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18)),
-                    Text(
-                      formatted == null
-                          ? date
-                          : '${formatted.day}/${formatted.month}/${formatted.year} • $time',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Informasi Pelanggan:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text('$customerName | $customerPhone', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(customerEmail, style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: Colors.grey.shade700)),
+                  const Divider(height: 16, color: Colors.grey),
+                  const Text('Lokasi Layanan:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Row(
+                    children: [
+                      Icon(LucideIcons.mapPin, size: 16, color: customPink),
+                      const SizedBox(width: 8),
+                      Text(locationName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: customPink)),
+                    ],
+                  ),
+                  const Divider(height: 16, color: Colors.grey),
+                  const Text('Layanan & Waktu:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text(service, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: customPink)),
+                  Text(
+                    '${DateTime.parse(date).day}/${DateTime.parse(date).month}/${DateTime.parse(date).year} pada $time',
+                    style: TextStyle(fontSize: 16, color: Colors.grey.shade800),
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
+              Text('Kami akan mengirimkan detail dan reminder melalui email.', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
             ],
           ),
         ),
@@ -323,23 +244,15 @@ class _BookingConfirmation extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: customPink,
             minimumSize: const Size(double.infinity, 50),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: const Text(
-            'Lihat Riwayat Booking',
-            style: TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+          child: const Text('Lihat Riwayat Booking', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
         ),
       ],
     );
   }
 }
 
-// ===============================
-// BOOKING FORM
-// ===============================
 class _BookingForm extends StatelessWidget {
   final String date;
   final Function(String) setDate;
@@ -354,6 +267,7 @@ class _BookingForm extends StatelessWidget {
   final TextEditingController emailController;
   final List<String> services;
   final List<Location> locations;
+  final VoidCallback handleSubmit;
 
   const _BookingForm({
     required this.date,
@@ -369,26 +283,31 @@ class _BookingForm extends StatelessWidget {
     required this.emailController,
     required this.services,
     required this.locations,
+    required this.handleSubmit,
   });
 
   String _formatDate(String isoDate) {
     if (isoDate.isEmpty) return 'Pilih Tanggal';
-    final d = DateTime.parse(isoDate);
-    final m = [
+    final date = DateTime.parse(isoDate);
+    final months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
       'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
     ];
-    return '${d.day} ${m[d.month - 1]} ${d.year}';
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // DATA DIRI
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: _box,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -396,9 +315,7 @@ class _BookingForm extends StatelessWidget {
                 children: [
                   Icon(LucideIcons.user, size: 20, color: customPink),
                   const SizedBox(width: 8),
-                  const Text('Data Diri',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  const Text('Data Diri', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -408,22 +325,25 @@ class _BookingForm extends StatelessWidget {
               ),
               TextFormField(
                 controller: phoneController,
+                keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(labelText: 'Nomor Telepon'),
               ),
               TextFormField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(labelText: 'Email (untuk konfirmasi)'),
               ),
             ],
           ),
         ),
-
         const SizedBox(height: 24),
-
-        // LOKASI
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: _box,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -431,107 +351,118 @@ class _BookingForm extends StatelessWidget {
                 children: [
                   Icon(LucideIcons.mapPin, size: 20, color: customPink),
                   const SizedBox(width: 8),
-                  const Text('Pilih Lokasi Studio',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  const Text('Pilih Lokasi Studio', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ],
               ),
-              const SizedBox(height: 16),
-              ...locations.map((loc) {
-                final active = loc.key == location;
-                return InkWell(
-                  onTap: () => setLocation(loc.key),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: active ? customPink : Colors.grey.shade300),
-                      color: active ? customPinkLight : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
+              const SizedBox(height: 12),
+              ...locations.map(
+                (loc) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: InkWell(
+                    onTap: () => setLocation(loc.key),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: loc.key == location ? customPink : Colors.grey.shade300,
+                        ),
+                        color: loc.key == location ? customPinkLight : Colors.white,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(loc.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600)),
-                              Text(loc.address,
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600, fontSize: 12)),
-                            ]),
-                        if (active)
-                          Icon(LucideIcons.check, color: customPink, size: 20),
-                      ],
+                              Text(loc.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                              Text(loc.address, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                            ],
+                          ),
+                          if (loc.key == location)
+                            Icon(LucideIcons.check, size: 18, color: customPink),
+                        ],
+                      ),
                     ),
                   ),
-                );
-              })
+                ),
+              ),
             ],
           ),
         ),
-
         const SizedBox(height: 24),
-
-        // LAYANAN & WAKTU
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: _box,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Layanan & Waktu',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Layanan & Waktu', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Layanan'),
+                decoration: const InputDecoration(labelText: 'Layanan Kuku'),
                 value: service.isEmpty ? null : service,
-                onChanged: (v) => setService(v!),
+                onChanged: (val) => setService(val!),
                 items: services
                     .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                     .toList(),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: InkWell(
                       onTap: () async {
-                        final pick = await showDatePicker(
+                        final pickedDate = await showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
                           firstDate: DateTime.now(),
-                          lastDate:
-                              DateTime.now().add(const Duration(days: 120)),
+                          lastDate: DateTime.now().add(const Duration(days: 90)),
                         );
-                        if (pick != null) {
-                          setDate(pick.toIso8601String().split('T')[0]);
+                        if (pickedDate != null) {
+                          setDate(pickedDate.toIso8601String().split('T')[0]);
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: _inputStyle,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Tanggal',
-                                      style: TextStyle(
-                                          color: Colors.grey.shade600)),
-                                  Text(
-                                    date.isEmpty
-                                        ? 'Pilih tanggal'
-                                        : _formatDate(date),
-                                    style: const TextStyle(fontSize: 16),
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tanggal',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
                                   ),
-                                ]),
-                            Icon(LucideIcons.calendar,
-                                size: 20, color: Colors.grey.shade600),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  date.isEmpty 
+                                    ? 'Pilih Tanggal' 
+                                    : _formatDate(date),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: date.isEmpty ? Colors.grey.shade400 : Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(
+                              LucideIcons.calendar,
+                              size: 20,
+                              color: Colors.grey.shade600,
+                            ),
                           ],
                         ),
                       ),
@@ -542,17 +473,12 @@ class _BookingForm extends StatelessWidget {
                     child: DropdownButtonFormField<String>(
                       decoration: const InputDecoration(labelText: 'Waktu'),
                       value: time.isEmpty ? null : time,
-                      onChanged: (v) => setTime(v!),
-                      items: [
-                        '10:00',
-                        '11:30',
-                        '13:00',
-                        '14:30',
-                        '16:00',
-                        '17:30'
-                      ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                      onChanged: (val) => setTime(val!),
+                      items: ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30']
+                          .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                          .toList(),
                     ),
-                  )
+                  ),
                 ],
               ),
             ],
@@ -561,17 +487,4 @@ class _BookingForm extends StatelessWidget {
       ],
     );
   }
-
-  BoxDecoration get _box => BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)
-        ],
-      );
-
-  BoxDecoration get _inputStyle => BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey.shade300),
-      );
 }
