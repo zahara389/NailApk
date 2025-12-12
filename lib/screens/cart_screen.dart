@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../config.dart';
-import '../components/helper_widgets.dart';
+import '../config.dart'; // Pastikan file ini ada dan berisi model Product, CartItem, warna customPink, dll
+// import '../components/helper_widgets.dart'; // Aktifkan jika Anda punya widget helper terpisah
 
 class ShoppingCartScreen extends StatefulWidget {
   final VoidCallback goBack;
@@ -200,8 +200,8 @@ class _CheckoutButton extends StatelessWidget {
       left: 0,
       right: 0,
       child: Container(
-        padding:
-            EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
@@ -213,8 +213,8 @@ class _CheckoutButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: customPink,
             minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           child: Text(
             'Proceed to Checkout (${formatRupiah(total)})',
@@ -259,8 +259,8 @@ class _SummarySection extends StatelessWidget {
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: customPink)),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 ),
               ),
@@ -313,7 +313,7 @@ class _CartItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// IMAGE
+          /// IMAGE (DIPERBAIKI: Menggunakan Image.asset)
           Container(
             width: 80,
             height: 80,
@@ -321,11 +321,11 @@ class _CartItem extends StatelessWidget {
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Image.network(
+            child: Image.asset( // <-- PERUBAHAN DI SINI
               item.product.imageUrl,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) =>
-                  Center(child: Text(item.product.name.substring(0, 4))),
+              errorBuilder: (_, __, ___) => Center(
+                  child: Text(item.product.name.substring(0, 4))),
             ),
           ),
 
@@ -355,8 +355,8 @@ class _CartItem extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () => handleRemoveItem(item),
-                      child:
-                          const Icon(LucideIcons.x, size: 16, color: Colors.grey),
+                      child: const Icon(LucideIcons.x,
+                          size: 16, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -490,7 +490,7 @@ class _ConfirmationModal extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              /// IMAGE
+              /// IMAGE (DIPERBAIKI: Menggunakan Image.asset)
               Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 width: 96,
@@ -500,7 +500,7 @@ class _ConfirmationModal extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: customPinkLight, width: 4),
                 ),
-                child: Image.network(
+                child: Image.asset( // <-- PERUBAHAN DI SINI
                   itemImage,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => const Center(
