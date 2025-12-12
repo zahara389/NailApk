@@ -79,12 +79,12 @@ class GalleryItem {
 
 // Data Produk (Deep copy dari yang di JS)
 List<Product> initialNewArrivals = [
-  Product(id: 1, brand: 'Madam Glam', name: 'Gel Polish Basic White (15ml)', price: 89000, imageUrl: 'https://i.ibb.co/6P0jL6k/white-gel-polish.png', isLimited: true),
-  Product(id: 2, brand: 'OPI', name: 'Top Coat High Shine Formula', price: 149000, imageUrl: 'https://i.ibb.co/VMyhV61/top-coat-opi.png', isLimited: false),
-  Product(id: 3, brand: 'Born Pretty', name: 'Nail Art Brush Set (5pcs)', price: 75000, imageUrl: 'https://i.ibb.co/YkjV4xX/brush-set-nail.png', isLimited: false),
-  Product(id: 4, brand: 'CND', name: 'Cuticle Oil Repair & Care', price: 65000, imageUrl: 'https://i.ibb.co/4K413s5/cuticle-oil.png', isLimited: false),
-  Product(id: 5, brand: 'KUKEI', name: 'Pro Nail LED UV Lamp 54W', price: 450000, imageUrl: 'https://i.ibb.co/hK5XjT0/uv-lamp.png', isLimited: false),
-  Product(id: 6, brand: 'Madam Glam', name: 'Polish Remover Acetone 100ml', price: 30000, imageUrl: 'https://i.ibb.co/b3w6mYx/remover-bottle.png', isLimited: false),
+  Product(id: 1, brand: 'Madam Glam', name: 'Gel Polish Basic White (15ml)', price: 89000, imageUrl: 'product1.jpeg', isLimited: true),
+  Product(id: 2, brand: 'OPI', name: 'Top Coat High Shine Formula', price: 149000, imageUrl: 'product2.jpeg', isLimited: false),
+  Product(id: 3, brand: 'Born Pretty', name: 'Nail Art Brush Set (5pcs)', price: 75000, imageUrl: 'product3.jpeg', isLimited: false),
+  Product(id: 4, brand: 'CND', name: 'Cuticle Oil Repair & Care', price: 65000, imageUrl: 'product4.jpeg', isLimited: false),
+  Product(id: 5, brand: 'KUKEI', name: 'Pro Nail LED UV Lamp 54W', price: 450000, imageUrl: 'product5.jpeg', isLimited: false),
+  Product(id: 6, brand: 'Madam Glam', name: 'Polish Remover Acetone 100ml', price: 30000, imageUrl: 'product6.jpeg', isLimited: false),
 ];
 
 // Data Galeri
