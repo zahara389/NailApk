@@ -71,8 +71,8 @@ class GalleryDetailScreen extends StatelessWidget {
               // ----------------------------------------------
               SliverList(
                 delegate: SliverChildListDelegate([
-                  // Foto Utama
-                  Image.network(
+                  // Foto Utama - PERUBAHAN KE IMAGE.ASSET
+                  Image.asset(
                     currentItem.imgUrl,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -80,7 +80,7 @@ class GalleryDetailScreen extends StatelessWidget {
                       height: 400,
                       color: customPinkLight,
                       child: const Center(
-                        child: Text('Nail Art Detail'),
+                        child: Text('Gambar tidak ditemukan di Assets'),
                       ),
                     ),
                   ),

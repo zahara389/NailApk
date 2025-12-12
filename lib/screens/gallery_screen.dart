@@ -98,8 +98,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
                       crossAxisCount: 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,
-                      // childAspectRatio: width / height. Adjust for desired card height.
-                      childAspectRatio: 0.72,
+                      // childAspectRatio: width / height. Slightly taller cards to avoid overflow.
+                      childAspectRatio: 0.65,
                     ),
                     itemBuilder: (context, index) {
                       return _GalleryCard(
@@ -153,15 +153,24 @@ class _GalleryCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
+                    // PERUBAHAN: Menggunakan Image.asset untuk foto lokal
+                    Image.asset(
                       item.imgUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: customPinkLight,
                         child: Center(
-                          child: Text(
-                            item.title,
-                            textAlign: TextAlign.center,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(LucideIcons.image, color: Colors.grey),
+                              const SizedBox(height: 4),
+                              Text(
+                                "Asset not found\n${item.title}",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                              ),
+                            ],
                           ),
                         ),
                       ),

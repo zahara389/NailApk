@@ -89,12 +89,60 @@ List<Product> initialNewArrivals = [
 
 // Data Galeri
 List<GalleryItem> initialGalleryItems = [
-  GalleryItem(id: 101, title: 'French Manicure Klasik', style: 'Minimalis', tags: ['white', 'simple', 'gel'], designer: 'Studio A', likes: 120, imgUrl: 'https://placehold.co/200x300/ff80bf/ffffff?text=French+Klasik'),
-  GalleryItem(id: 102, title: 'Summer Floral Pop', style: 'Floral', tags: ['warna', 'bunga', 'summer'], designer: 'Nailista', likes: 350, imgUrl: 'https://placehold.co/200x350/ffc0d9/333333?text=Floral+Pop'),
-  GalleryItem(id: 103, title: 'Glittery Ombre Pink', style: 'Glamour', tags: ['glitter', 'pink', 'ombre'], designer: 'Glam Nail', likes: 500, imgUrl: 'https://placehold.co/200x250/ff80bf/ffffff?text=Ombre+Glitter'),
-  GalleryItem(id: 104, title: 'Matte Nude Modern', style: 'Minimalis', tags: ['matte', 'nude', 'simple'], designer: 'Studio A', likes: 90, imgUrl: 'https://placehold.co/200x280/e6e6e6/333333?text=Matte+Nude'),
-  GalleryItem(id: 105, title: 'Abstract Lines Art', style: 'Abstract', tags: ['garis', 'hitam', 'modern'], designer: 'Artisan Nails', likes: 210, imgUrl: 'https://placehold.co/200x320/cccccc/333333?text=Abstract+Lines'),
-  GalleryItem(id: 106, title: 'Cosmic Pop Art Nails', style: 'Pop/Abstract', tags: ['bintang', 'kartun', 'warna-warni', 'abstract'], designer: 'Client Photo', likes: 450, imgUrl: 'https://placehold.co/200x300/ff80bf/ffffff?text=Cosmic+Art'),
+  GalleryItem(
+    id: 107,
+    title: 'French Manicure Klasik',
+    style: 'Minimalis',
+    tags: ['white', 'simple', 'clean'],
+    designer: 'Studio A',
+    likes: 120,
+    imgUrl: 'assets/images/french_manicure.jpeg',
+  ),
+  GalleryItem(
+    id: 108,
+    title: 'Summer Floral Pop',
+    style: 'Floral',
+    tags: ['warna', 'bunga', 'summer'],
+    designer: 'Nailista',
+    likes: 350,
+    imgUrl: 'assets/images/summer_floral.jpg',
+  ),
+  GalleryItem(
+    id: 109,
+    title: 'Glittery Ombre Pink',
+    style: 'Glamour',
+    tags: ['glitter', 'pink', 'ombre'],
+    designer: 'Glam Nail',
+    likes: 500,
+    imgUrl: 'assets/images/glittery_ombre.jpg',
+  ),
+  GalleryItem(
+    id: 110,
+    title: 'Matte Nude Modern',
+    style: 'Minimalis',
+    tags: ['matte', 'nude', 'simple'],
+    designer: 'Studio A',
+    likes: 90,
+    imgUrl: 'assets/images/matte_nude.jpg',
+  ),
+  GalleryItem(
+    id: 111,
+    title: 'Abstract Lines Art',
+    style: 'Abstract',
+    tags: ['garis', 'hitam', 'modern'],
+    designer: 'Artisan Nails',
+    likes: 210,
+    imgUrl: 'assets/images/abstract_lines.jpg',
+  ),
+  GalleryItem(
+    id: 112,
+    title: 'Cosmic Pop Art Nails',
+    style: 'Pop/Abstract',
+    tags: ['bintang', 'kartun', 'warna-warni'],
+    designer: 'Client Photo',
+    likes: 450,
+    imgUrl: 'assets/images/cosmic_pop.jpg',
+  ),
 ];
 
 // Data Kategori

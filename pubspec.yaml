@@ -21,4 +21,15 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/
+    - assets/images/abstract_lines.jpg
+    - assets/images/cosmic_pop.jpg
+    - assets/images/french_manicure.jpeg
+    - assets/images/glittery_ombre.jpg
+    - assets/images/matte_nude.jpg
+    - assets/images/product1.jpeg
+    - assets/images/product2.jpeg
+    - assets/images/product3.jpeg
+    - assets/images/product4.jpeg
+    - assets/images/product5.jpeg
+    - assets/images/product6.jpeg
+    - assets/images/summer_floral.jpg
