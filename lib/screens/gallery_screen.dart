@@ -97,8 +97,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
                       crossAxisCount: 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,
+<<<<<<< HEAD
                       // Tinggi card lebih besar untuk menampung konten
                       childAspectRatio: 0.68,
+=======
+                      // childAspectRatio: width / height. Taller cards to prevent overflow.
+                      childAspectRatio: 0.58,
+>>>>>>> 19d30f111ea6718ab8580110d4d87f68abd90450
                     ),
                     itemBuilder: (context, index) {
                       return _GalleryCard(
@@ -128,6 +133,12 @@ class _GalleryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
+=======
+    // Balanced image height so the grid stays within its aspect ratio
+    final fallbackHeight = 170 + (item.id % 3) * 10;
+
+>>>>>>> 19d30f111ea6718ab8580110d4d87f68abd90450
     return InkWell(
       onTap: () => navigate('GalleryDetail', data: item),
       child: Container(
