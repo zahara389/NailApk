@@ -146,13 +146,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       height: 300,
                       color: Colors.grey.shade50,
                       child: Center(
-                        child: Image.network(
-                          product.imageUrl,
-                          height: 250,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Center(child: Text('Product Image')),
-                        ),
+                        child: product.imageUrl.startsWith('http')
+                            ? Image.network(
+                                product.imageUrl,
+                                height: 250,
+                                fit: BoxFit.contain,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  print('Error loading network image: $error');
+                                  return const Center(child: Text('Product Image'));
+                                },
+                              )
+                            : Image.asset(
+                                product.imageUrl,
+                                height: 250,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  print('Error loading asset image: $error');
+                                  return const Center(child: Text('Product Image'));
+                                },
+                              ),
                       ),
                     ),
 

@@ -190,12 +190,23 @@ class _FavoriteItemCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 color: Colors.grey.shade50,
               ),
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Icon(LucideIcons.heart, color: customPink),
-                ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: imageUrl.startsWith('http')
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Center(
+                          child: Icon(LucideIcons.heart, color: customPink),
+                        ),
+                      )
+                    : Image.asset(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Center(
+                          child: Icon(LucideIcons.heart, color: customPink),
+                        ),
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -204,6 +215,7 @@ class _FavoriteItemCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 12),

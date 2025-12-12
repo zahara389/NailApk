@@ -287,13 +287,9 @@ class _BookingForm extends StatelessWidget {
   });
 
   String _formatDate(String isoDate) {
-    if (isoDate.isEmpty) return 'Pilih Tanggal';
+    if (isoDate.isEmpty) return '';
     final date = DateTime.parse(isoDate);
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   @override
@@ -427,43 +423,28 @@ class _BookingForm extends StatelessWidget {
                           setDate(pickedDate.toIso8601String().split('T')[0]);
                         }
                       },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(4),
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: 'Tanggal',
+                          suffixIcon: Icon(
+                            LucideIcons.calendar,
+                            size: 20,
+                            color: Colors.grey.shade600,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Tanggal',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  date.isEmpty 
-                                    ? 'Pilih Tanggal' 
-                                    : _formatDate(date),
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: date.isEmpty ? Colors.grey.shade400 : Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Icon(
-                              LucideIcons.calendar,
-                              size: 20,
-                              color: Colors.grey.shade600,
-                            ),
-                          ],
+                        child: Text(
+                          date.isEmpty ? 'dd/mm/yyyy' : _formatDate(date),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: date.isEmpty ? Colors.grey.shade400 : Colors.black,
+                          ),
                         ),
                       ),
                     ),

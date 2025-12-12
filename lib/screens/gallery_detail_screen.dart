@@ -28,6 +28,12 @@ class GalleryDetailScreen extends StatelessWidget {
     }
 
     final currentItem = item!;
+    
+    // Hitung tinggi total bottom bars
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomNavHeight = 60.0; // tinggi bottom navigation
+    final actionBarHeight = 82.0; // tinggi button bar (padding + button)
+    final totalBottomHeight = bottomNavHeight + actionBarHeight + bottomPadding;
 
     return Scaffold(
       body: Stack(
@@ -39,7 +45,6 @@ class GalleryDetailScreen extends StatelessWidget {
                 floating: true,
                 backgroundColor: Colors.white,
 
-                // ✅ FIX BACK BUTTON
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: goBack,
@@ -66,121 +71,113 @@ class GalleryDetailScreen extends StatelessWidget {
                 ],
               ),
 
-              // ----------------------------------------------
-              // CONTENT
-              // ----------------------------------------------
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  // Foto Utama - PERUBAHAN KE IMAGE.ASSET
-                  Image.asset(
-                    currentItem.imgUrl,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 400,
-                      color: customPinkLight,
-                      child: const Center(
-                        child: Text('Gambar tidak ditemukan di Assets'),
+              // CONTENT dengan padding bottom yang cukup
+              SliverPadding(
+                padding: EdgeInsets.only(bottom: totalBottomHeight),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Foto Utama
+                    Image.asset(
+                      currentItem.imgUrl,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 400,
+                        color: customPinkLight,
+                        child: const Center(
+                          child: Text('Gambar tidak ditemukan di Assets'),
+                        ),
                       ),
                     ),
-                  ),
 
-                  // DETAIL CONTENT
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          currentItem.title,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                    // DETAIL CONTENT
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            currentItem.title,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        // Info Dasar
-                        Text('Desainer: ${currentItem.designer}',
-                            style: const TextStyle(fontSize: 16)),
-                        Text('Gaya Utama: ${currentItem.style}',
-                            style: const TextStyle(fontSize: 16)),
-                        Text('Disukai: ${currentItem.likes} orang',
-                            style: const TextStyle(fontSize: 16)),
+                          // Info Dasar
+                          Text('Desainer: ${currentItem.designer}',
+                              style: const TextStyle(fontSize: 16)),
+                          Text('Gaya Utama: ${currentItem.style}',
+                              style: const TextStyle(fontSize: 16)),
+                          Text('Disukai: ${currentItem.likes} orang',
+                              style: const TextStyle(fontSize: 16)),
 
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                        // Tags
-                        const Text(
-                          'Tags:',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
+                          // Tags
+                          const Text(
+                            'Tags:',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
 
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: currentItem.tags
-                              .map(
-                                (tag) => Chip(
-                                  label: Text(
-                                    '#$tag',
-                                    style: TextStyle(
-                                        color: customPink, fontSize: 12),
+                          Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: currentItem.tags
+                                .map(
+                                  (tag) => Chip(
+                                    label: Text(
+                                      '#$tag',
+                                      style: TextStyle(
+                                          color: customPink, fontSize: 12),
+                                    ),
+                                    backgroundColor: customPinkLight,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 0),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
                                   ),
-                                  backgroundColor: customPinkLight,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 0),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
+                                )
+                                .toList(),
+                          ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                        // Deskripsi
-                        const Text(
-                          'Tentang Gaya:',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
+                          // Deskripsi
+                          const Text(
+                            'Tentang Gaya:',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
 
-                        Text(
-                          'Gaya ini menampilkan perpaduan harmonis antara '
-                          '${currentItem.style} dengan sentuhan '
-                          '${currentItem.tags.join(', ')}. Sangat cocok untuk acara santai maupun formal, memberikan kesan elegan dan modern.',
-                          style: TextStyle(color: Colors.grey.shade700),
-                        ),
-
-                        const SizedBox(height: 100),
-                      ],
+                          Text(
+                            'Gaya ini menampilkan perpaduan harmonis antara '
+                            '${currentItem.style} dengan sentuhan '
+                            '${currentItem.tags.join(', ')}. Sangat cocok untuk acara santai maupun formal, memberikan kesan elegan dan modern.',
+                            style: TextStyle(color: Colors.grey.shade700),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ]),
+                  ]),
+                ),
               ),
             ],
           ),
 
-          // ----------------------------------------------
-          // FOOTER BUTTON
-          // ----------------------------------------------
+          // BUTTON - Positioned di atas bottom navigation
           Positioned(
-            bottom: 0,
+            bottom: bottomNavHeight + bottomPadding,
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                16,
-                16,
-                MediaQuery.of(context).padding.bottom + 16,
-              ),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -194,7 +191,7 @@ class GalleryDetailScreen extends StatelessWidget {
                 onPressed: () => navigate('Booking'),
                 icon: const Icon(LucideIcons.calendar, color: Colors.white),
                 label: const Text(
-                  'Book Appointment dengan Gaya Ini',
+                  'Book Appointment',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,

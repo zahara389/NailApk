@@ -46,7 +46,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
           onPressed: widget.goBack,
         ),
         title: Text(
-          'Inspirasi Galeri (${filteredItems.length})',
+          'Gallery (${filteredItems.length})',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -59,7 +59,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Cari gaya atau tag...',
+                hintText: 'Search...',
                 prefixIcon: const Icon(LucideIcons.search, color: Colors.grey),
                 contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 border: OutlineInputBorder(
@@ -90,7 +90,6 @@ class _GalleryScreenState extends State<GalleryScreen> {
                       ),
                     ),
                   )
-                // ====== Stable GridView version (2 columns) ======
                 : GridView.builder(
                     padding: const EdgeInsets.only(left: 16, right: 16, bottom: 80, top: 8),
                     itemCount: filteredItems.length,
@@ -98,8 +97,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
                       crossAxisCount: 2,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,
-                      // childAspectRatio: width / height. Slightly taller cards to avoid overflow.
-                      childAspectRatio: 0.65,
+                      // Tinggi card lebih besar untuk menampung konten
+                      childAspectRatio: 0.68,
                     ),
                     itemBuilder: (context, index) {
                       return _GalleryCard(
@@ -129,9 +128,6 @@ class _GalleryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // fallback height when image fails to load
-    final fallbackHeight = 180 + (item.id % 4) * 20;
-
     return InkWell(
       onTap: () => navigate('GalleryDetail', data: item),
       child: Container(
@@ -147,13 +143,12 @@ class _GalleryCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Image area with fixed height so grid doesn't depend on intrinsic image size
-              SizedBox(
-                height: fallbackHeight.toDouble(),
+              // Image area dengan Expanded agar flexible
+              Expanded(
+                flex: 5,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // PERUBAHAN: Menggunakan Image.asset untuk foto lokal
                     Image.asset(
                       item.imgUrl,
                       fit: BoxFit.cover,
@@ -165,10 +160,13 @@ class _GalleryCard extends StatelessWidget {
                             children: [
                               const Icon(LucideIcons.image, color: Colors.grey),
                               const SizedBox(height: 4),
-                              Text(
-                                "Asset not found\n${item.title}",
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "Asset not found\n${item.title}",
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                ),
                               ),
                             ],
                           ),
@@ -193,14 +191,18 @@ class _GalleryCard extends StatelessWidget {
                         children: [
                           Text(
                             item.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                              fontSize: 13,
                             ),
                           ),
                           Text(
                             'by ${item.designer}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(color: Colors.grey.shade300, fontSize: 10),
                           )
                         ],
@@ -210,20 +212,29 @@ class _GalleryCard extends StatelessWidget {
                 ),
               ),
 
-              // Spacer + metadata row
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
+              // Bottom metadata - gunakan Container dengan height tetap
+              Container(
+                padding: const EdgeInsets.all(8),
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        item.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            item.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     InkWell(
                       onTap: () => toggleFavorite(item.id),
                       child: Container(
