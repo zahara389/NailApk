@@ -97,6 +97,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final subtotal = _calculateSubtotal();
     final shipping = _calculateShippingCost(subtotal);
     final total = subtotal + shipping;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomNavHeight = 60.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -110,7 +112,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 120),
+            padding: EdgeInsets.only(
+              left: 16, 
+              right: 16, 
+              top: 8, 
+              bottom: 200 + bottomPadding
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -196,21 +203,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           // Bottom Fixed Order Button
           // ----------------------------------------
           Positioned(
-            bottom: 0,
+            bottom: bottomNavHeight + bottomPadding,
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                16,
-                16,
-                MediaQuery.of(context).padding.bottom + 16,
-              ),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)
-                ],
               ),
               child: Column(
                 children: [

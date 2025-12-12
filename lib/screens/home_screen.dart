@@ -10,7 +10,6 @@ class HomeScreen extends StatefulWidget {
   final List<Product> newArrivals;
   final Function(List<Product>) setNewArrivals;
   final Function(Product) handleAddToCart;
-  final String currentView;
 
   const HomeScreen({
     super.key,
@@ -20,7 +19,6 @@ class HomeScreen extends StatefulWidget {
     required this.newArrivals,
     required this.setNewArrivals,
     required this.handleAddToCart,
-    required this.currentView,
   });
 
   @override
@@ -238,7 +236,9 @@ class _FeaturedSection extends StatelessWidget {
               color: Colors.grey.shade100,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Stack(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,33 +247,32 @@ class _FeaturedSection extends StatelessWidget {
                     const SizedBox(height: 4),
                     const Text(
                       'Pure Acetone Remover',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, height: 1.1),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, height: 1.1),
                     ),
                   ],
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: -10,
-                  child: Image.network(
-                    'https://i.ibb.co/b3w6mYx/remover-bottle.png',
-                    height: 140,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const SizedBox(height: 140, child: Center(child: Text('REMOVER'))),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: ElevatedButton(
-                    onPressed: () => print('Shop Remover'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: customPink,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      minimumSize: const Size(80, 30),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => print('Shop Remover'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: customPink,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        minimumSize: const Size(80, 30),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('SHOP NOW', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
-                    child: const Text('SHOP NOW', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                  ),
-                )
+                    Image.network(
+                      'https://i.ibb.co/b3w6mYx/remover-bottle.png',
+                      height: 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const SizedBox(height: 100, width: 40, child: Center(child: Text('IMG', style: TextStyle(fontSize: 8)))),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -288,7 +287,9 @@ class _FeaturedSection extends StatelessWidget {
                 color: Colors.blue.shade200,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Stack(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,31 +298,37 @@ class _FeaturedSection extends StatelessWidget {
                       const SizedBox(height: 4),
                       const Text(
                         'Pro Nail LED UV Lamp',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, height: 1.1, color: Color(0xFF0D47A1)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, height: 1.1, color: Color(0xFF0D47A1)),
                       ),
-                      const SizedBox(height: 8),
-                      Text('Keringkan Gel Polish lebih cepat dan merata.', style: TextStyle(fontSize: 10, color: Colors.blue.shade800)),
+                      const SizedBox(height: 6),
+                      Text('Keringkan Gel Polish lebih cepat dan merata.', 
+                        style: TextStyle(fontSize: 9, color: Colors.blue.shade800, height: 1.2)),
                     ],
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: -5,
-                    child: Image.network(
-                      'https://i.ibb.co/hK5XjT0/uv-lamp.png',
-                      height: 100,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const SizedBox(height: 100, child: Center(child: Text('LAMP'))),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    child: Text('15% OFF | BELI SEKARANG', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue.shade800)),
-                  ),
-                  const Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Icon(LucideIcons.plus, size: 16, color: Color(0xFF0D47A1)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('15% OFF', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
+                          Row(
+                            children: [
+                              Text('BELI SEKARANG', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.blue.shade800)),
+                              const SizedBox(width: 4),
+                              const Icon(LucideIcons.plus, size: 12, color: Color(0xFF0D47A1)),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Image.network(
+                        'https://i.ibb.co/hK5XjT0/uv-lamp.png',
+                        height: 80,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => const SizedBox(height: 80, width: 60, child: Center(child: Text('IMG', style: TextStyle(fontSize: 8)))),
+                      ),
+                    ],
                   ),
                 ],
               ),
