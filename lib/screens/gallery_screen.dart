@@ -46,7 +46,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
           onPressed: widget.goBack,
         ),
         title: Text(
-          'Inspirasi Galeri (${filteredItems.length})',
+          'Gallery (${filteredItems.length})',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -59,7 +59,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Cari gaya atau tag...',
+                hintText: 'Search...',
                 prefixIcon: const Icon(LucideIcons.search, color: Colors.grey),
                 contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 border: OutlineInputBorder(

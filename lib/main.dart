@@ -21,6 +21,8 @@ import 'screens/product_detail_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/voucher_screen.dart';
+import 'screens/purchase_history_screen.dart';
+import 'screens/purchase_detail_screen.dart';
 
 // Components & Config
 import 'config.dart';
@@ -74,6 +76,7 @@ class _AppRouterState extends State<AppRouter> {
   // Routing State
   String _currentView = 'Login';
   final List<String> _history = ['Login'];
+  dynamic _navigationData; // TAMBAHAN BARU
 
   // User State
   bool _isLoggedIn = false;
@@ -92,13 +95,15 @@ class _AppRouterState extends State<AppRouter> {
 
   // Transaction State
   PaymentDetails? _paymentDetails;
-  List<PurchaseHistory> _purchaseHistory = dummyPurchaseHistory;
-  List<Booking> _bookingHistory = dummyBookingHistory;
-  List<NotificationItem> _notifications = dummyNotifications;
+  List<PurchaseHistory> _purchaseHistory = List.from(dummyPurchaseHistory);
+  List<Booking> _bookingHistory = List.from(dummyBookingHistory);
+  List<NotificationItem> _notifications = List.from(dummyNotifications);
 
   // NAVIGATION
   void navigate(String view, {dynamic data}) {
     setState(() {
+      _navigationData = data; // SIMPAN DATA NAVIGASI
+      
       // Login / Register resets history
       if (view == 'Login' || view == 'Register') {
         _history.clear();
@@ -211,7 +216,7 @@ class _AppRouterState extends State<AppRouter> {
           handleAddToCart: handleAddToCart,
           cartCount: cartCount,
           setNewArrivals: (list) => setState(() => _newArrivals = list),
-          newArrivals: _newArrivals, // <--- FIX PENTING
+          newArrivals: _newArrivals,
         );
 
       case 'Cart':
@@ -254,6 +259,24 @@ class _AppRouterState extends State<AppRouter> {
           userAddress: _userAddress,
           currentView: _currentView,
         );
+
+      // ========== TAMBAHAN BARU ==========
+      case 'PurchaseHistory':
+        return PurchaseHistoryScreen(
+          goBack: goBack,
+          navigate: navigate,
+          purchaseHistory: _purchaseHistory,
+        );
+
+      case 'PurchaseDetail':
+        if (_navigationData == null || _navigationData is! PurchaseHistory) {
+          return const Center(child: Text("Order tidak ditemukan."));
+        }
+        return PurchaseDetailScreen(
+          goBack: goBack,
+          order: _navigationData as PurchaseHistory,
+        );
+      // ===================================
 
       case 'Gallery':
         return GalleryScreen(

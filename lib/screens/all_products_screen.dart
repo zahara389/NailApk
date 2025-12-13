@@ -24,7 +24,6 @@ class AllProductsScreen extends StatelessWidget {
     final updatedList = newArrivals.map((p) {
       if (p.id == productId) {
         wasFavorite = p.isFavorite;
-        // Gunakan copyWith untuk update isFavorite
         return p.copyWith(isFavorite: !p.isFavorite);
       }
       return p;
@@ -43,42 +42,44 @@ class AllProductsScreen extends StatelessWidget {
           icon: const Icon(LucideIcons.arrowLeft),
           onPressed: goBack,
         ),
-        title: Text('Semua Produk (${newArrivals.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Semua Produk (${newArrivals.length})',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.7,
-                ),
-                itemCount: newArrivals.length,
-                itemBuilder: (context, index) {
-                  final product = newArrivals[index];
-                  return ProductCard(
-                    product: product,
-                    navigateToPdp: (p) => navigate('PDP', data: p),
-                    handleFavoriteToggle: _handleFavoriteToggle,
-                    handleAddToCart: handleAddToCart,
-                    isGrid: true,
-                  );
-                },
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.0),
-                child: Text('Akhir dari daftar produk.', style: TextStyle(color: Colors.grey, fontSize: 12)),
-              ),
-            ],
-          ),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16.0),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16.0,
+          mainAxisSpacing: 16.0,
+          childAspectRatio: 0.6, // Sesuaikan ini dengan tinggi ProductCard
         ),
+        itemCount: newArrivals.length + 1, // +1 untuk footer
+        itemBuilder: (context, index) {
+          // Footer item
+          if (index == newArrivals.length) {
+            return const SizedBox(
+              height: 50,
+              child: Center(
+                child: Text(
+                  'Akhir dari daftar produk.',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ),
+            );
+          }
+          
+          final product = newArrivals[index];
+          return ProductCard(
+            product: product,
+            navigateToPdp: (p) => navigate('PDP', data: p),
+            handleFavoriteToggle: _handleFavoriteToggle,
+            handleAddToCart: handleAddToCart,
+            isGrid: true,
+          );
+        },
       ),
     );
   }

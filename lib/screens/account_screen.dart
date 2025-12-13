@@ -38,7 +38,6 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   void initState() {
     super.initState();
-    // Perbaikan: Copy manual Address karena copyWith() mungkin belum ada
     _profileData = Address(
       name: widget.userAddress.name,
       phone: widget.userAddress.phone,
@@ -57,14 +56,12 @@ class _AccountScreenState extends State<AccountScreen> {
       _profileData = newAddress;
       _isEditMode = false;
     });
-    // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Profile berhasil disimpan'),
         duration: Duration(seconds: 2),
       ),
     );
-    print('Profile saved: ${_profileData.name}');
   }
 
   @override
@@ -227,12 +224,15 @@ class _AccountScreenState extends State<AccountScreen> {
                   const Text('Riwayat Pembelian & Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   if (displayHistory.isNotEmpty)
-                    ...displayHistory.map((order) => _PurchaseItem(order: order)),
+                    ...displayHistory.map((order) => _PurchaseItem(
+                      order: order,
+                      navigate: widget.navigate, // PASS NAVIGATE FUNCTION
+                    )),
                   if (displayHistory.isEmpty)
                     Center(child: Text('Belum ada riwayat pembelian.', style: TextStyle(color: Colors.grey.shade500))),
                   const SizedBox(height: 8),
                   TextButton(
-                    onPressed: () => print('Lihat Semua Riwayat'),
+                    onPressed: () => widget.navigate('PurchaseHistory'), // NAVIGATE KE PURCHASE HISTORY
                     child: Text('Lihat Semua Riwayat', style: TextStyle(color: customPink, decoration: TextDecoration.underline)),
                   ),
                 ],
@@ -423,7 +423,7 @@ class _ProfileEditorState extends State<_ProfileEditor> {
       name: _nameController.text,
       phone: _phoneController.text,
       address: _addressController.text,
-      email: widget.profileData.email, // Email tidak bisa diubah
+      email: widget.profileData.email,
     );
     widget.onUpdate(newAddress);
   }
@@ -493,8 +493,12 @@ class _ProfileInput extends StatelessWidget {
 
 class _PurchaseItem extends StatelessWidget {
   final PurchaseHistory order;
+  final Function(String, {dynamic data})? navigate; // TAMBAHAN BARU
 
-  const _PurchaseItem({required this.order});
+  const _PurchaseItem({
+    required this.order,
+    this.navigate, // TAMBAHAN BARU
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -531,7 +535,7 @@ class _PurchaseItem extends StatelessWidget {
               Text(order.date, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
               const SizedBox(height: 4),
               InkWell(
-                onTap: () => print('Lihat detail order ${order.id}'),
+                onTap: () => navigate?.call('PurchaseDetail', data: order), // NAVIGATE KE DETAIL
                 child: Text('Lihat Detail', style: TextStyle(color: customPink, fontSize: 12, decoration: TextDecoration.underline)),
               ),
             ],
