@@ -27,6 +27,7 @@ import 'screens/purchase_detail_screen.dart';
 // Components & Config
 import 'config.dart';
 import 'components/bottom_nav_bar.dart';
+import 'services/api_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,6 +90,9 @@ class _AppRouterState extends State<AppRouter> {
   List<Product> _newArrivals = initialNewArrivals;
   Product? _selectedProduct;
 
+  // API service
+  late final ApiService _apiService;
+
   // Gallery State
   List<GalleryItem> _galleryItems = initialGalleryItems;
   GalleryItem? _selectedGalleryItem;
@@ -134,6 +138,61 @@ class _AppRouterState extends State<AppRouter> {
       // Clear cart after success
       if (view == 'OrderSuccess') _cart.clear();
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _apiService = ApiService();
+    // Note: don't auto-load products on init to avoid network calls during widget tests.
+    // Products can be refreshed manually via the AllProducts screen or an explicit user action.
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final products = await _apiService.fetchProducts();
+      setState(() => _newArrivals = products);
+    } catch (e) {
+      // Silently print; consider showing a SnackBar
+      // ignore: avoid_print
+      print('Gagal load products: $e');
+    }
+  }
+
+  Future<Product?> _createProduct(Map<String, dynamic> payload, {String? imagePath}) async {
+    try {
+      final p = await _apiService.createProduct(payload, imagePath: imagePath);
+      setState(() => _newArrivals = [..._newArrivals, p]);
+      return p;
+    } catch (e) {
+      // ignore: avoid_print
+      print('Create product error: $e');
+      return null;
+    }
+  }
+
+  Future<Product?> _updateProduct(int id, Map<String, dynamic> payload, {String? imagePath}) async {
+    try {
+      final p = await _apiService.updateProduct(id, payload, imagePath: imagePath);
+      setState(() => _newArrivals = _newArrivals.map((x) => x.id == id ? p : x).toList());
+      return p;
+    } catch (e) {
+      // ignore: avoid_print
+      print('Update product error: $e');
+      return null;
+    }
+  }
+
+  Future<bool> _deleteProduct(int id) async {
+    try {
+      await _apiService.deleteProduct(id);
+      setState(() => _newArrivals = _newArrivals.where((x) => x.id != id).toList());
+      return true;
+    } catch (e) {
+      // ignore: avoid_print
+      print('Delete product error: $e');
+      return false;
+    }
   }
 
   void goBack() {
@@ -245,6 +304,10 @@ class _AppRouterState extends State<AppRouter> {
           newArrivals: _newArrivals,
           handleAddToCart: handleAddToCart,
           setNewArrivals: (list) => setState(() => _newArrivals = list),
+          onRefresh: _loadProducts,
+          onCreate: _createProduct,
+          onUpdate: _updateProduct,
+          onDelete: _deleteProduct,
         );
 
       case 'Account':

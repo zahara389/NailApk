@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
-import '../components/helper_widgets.dart';
 
 class RegisterScreen extends StatelessWidget {
   final Function(String, {dynamic data}) navigate;

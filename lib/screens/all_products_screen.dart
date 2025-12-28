@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../config.dart';
 import '../components/product_card.dart';
 
@@ -10,6 +14,20 @@ class AllProductsScreen extends StatelessWidget {
   final Function(Product) handleAddToCart;
   final Function(List<Product>) setNewArrivals;
 
+  final Future<void> Function()? onRefresh;
+  final Future<Product?> Function(
+    Map<String, dynamic> payload, {
+    String? imagePath,
+  })? onCreate;
+
+  final Future<Product?> Function(
+    int id,
+    Map<String, dynamic> payload, {
+    String? imagePath,
+  })? onUpdate;
+
+  final Future<bool> Function(int id)? onDelete;
+
   const AllProductsScreen({
     super.key,
     required this.goBack,
@@ -17,21 +35,22 @@ class AllProductsScreen extends StatelessWidget {
     required this.newArrivals,
     required this.handleAddToCart,
     required this.setNewArrivals,
+    this.onRefresh,
+    this.onCreate,
+    this.onUpdate,
+    this.onDelete,
   });
 
+  // ================= FAVORITE =================
   void _handleFavoriteToggle(int productId) {
-    bool wasFavorite = false;
-    final updatedList = newArrivals.map((p) {
+    final updated = newArrivals.map((p) {
       if (p.id == productId) {
-        wasFavorite = p.isFavorite;
         return p.copyWith(isFavorite: !p.isFavorite);
       }
       return p;
     }).toList();
-    setNewArrivals(updatedList);
-    if (!wasFavorite) {
-      navigate('Favorites');
-    }
+
+    setNewArrivals(updated);
   }
 
   @override
@@ -46,40 +65,198 @@ class AllProductsScreen extends StatelessWidget {
           'Semua Produk (${newArrivals.length})',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: onRefresh,
+          ),
+        ],
       ),
+
+      // ================= GRID =================
       body: GridView.builder(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
+        itemCount: newArrivals.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 16.0,
-          mainAxisSpacing: 16.0,
-          childAspectRatio: 0.6, // Sesuaikan ini dengan tinggi ProductCard
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 0.65, // PAS DENGAN ProductCard
         ),
-        itemCount: newArrivals.length + 1, // +1 untuk footer
         itemBuilder: (context, index) {
-          // Footer item
-          if (index == newArrivals.length) {
-            return const SizedBox(
-              height: 50,
-              child: Center(
-                child: Text(
-                  'Akhir dari daftar produk.',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ),
-            );
-          }
-          
           final product = newArrivals[index];
-          return ProductCard(
-            product: product,
-            navigateToPdp: (p) => navigate('PDP', data: p),
-            handleFavoriteToggle: _handleFavoriteToggle,
-            handleAddToCart: handleAddToCart,
-            isGrid: true,
+
+          return GestureDetector(
+            onLongPress: () =>
+                _showItemOptions(context, product),
+            child: ProductCard(
+              product: product,
+              navigateToPdp: (p) => navigate('PDP', data: p),
+              handleFavoriteToggle: _handleFavoriteToggle, // ✅ FIX ERROR
+              handleAddToCart: handleAddToCart,
+            ),
           );
         },
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showCreateDialog(context),
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  // ================= OPTIONS =================
+  void _showItemOptions(BuildContext context, Product product) {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit'),
+              onTap: () {
+                Navigator.pop(context);
+                _showEditDialog(context, product);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Hapus'),
+              onTap: () async {
+                Navigator.pop(context);
+                if (onDelete != null) {
+                  await onDelete!(product.id);
+                  setNewArrivals(
+                    newArrivals.where((p) => p.id != product.id).toList(),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ================= CREATE =================
+  void _showCreateDialog(BuildContext context) async {
+    final nameCtrl = TextEditingController();
+    final priceCtrl = TextEditingController();
+    String? imagePath;
+
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Tambah Produk'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(labelText: 'Nama Produk'),
+            ),
+            TextField(
+              controller: priceCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Harga'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.image),
+              label: const Text('Pilih Gambar'),
+              onPressed: () async {
+                final picker = ImagePicker();
+                final file =
+                    await picker.pickImage(source: ImageSource.gallery);
+                if (file != null) {
+                  imagePath = file.path;
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (onCreate != null) {
+                final product = await onCreate!(
+                  {
+                    'name': nameCtrl.text,
+                    'price': int.tryParse(priceCtrl.text) ?? 0,
+                  },
+                  imagePath: imagePath,
+                );
+
+                if (product != null) {
+                  setNewArrivals([...newArrivals, product]);
+                }
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= EDIT =================
+  void _showEditDialog(BuildContext context, Product product) async {
+    final nameCtrl = TextEditingController(text: product.name);
+    final priceCtrl =
+        TextEditingController(text: product.price.toString());
+
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Edit Produk'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl),
+            TextField(
+              controller: priceCtrl,
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (onUpdate != null) {
+                final updated = await onUpdate!(
+                  product.id,
+                  {
+                    'name': nameCtrl.text,
+                    'price':
+                        int.tryParse(priceCtrl.text) ?? product.price,
+                  },
+                );
+
+                if (updated != null) {
+                  setNewArrivals(
+                    newArrivals
+                        .map((p) => p.id == updated.id ? updated : p)
+                        .toList(),
+                  );
+                }
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
       ),
     );
   }

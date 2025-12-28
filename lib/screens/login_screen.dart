@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
-import '../components/helper_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
   final Function(String, {dynamic data}) navigate;
@@ -27,13 +26,22 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController(text: 'password123');
 
   void _handleLogin() {
+    final input = _usernameController.text.trim();
+    String displayName;
+    if (input.contains('@')) {
+      final local = input.split('@').first;
+      displayName = local.isEmpty ? 'Sarah' : '${local[0].toUpperCase()}${local.substring(1)}';
+    } else {
+      displayName = input.isEmpty ? 'Sarah' : input;
+    }
+
     widget.setIsLoggedIn(true);
-    widget.setUserName(_usernameController.text.isEmpty ? 'Sarah' : _usernameController.text);
+    widget.setUserName(displayName);
     widget.setUserAddress(Address(
-      name: _usernameController.text,
+      name: displayName,
       phone: '0812-3456-7890',
       address: 'Jl. Bojongsoang No. 10, Kecamatan Bojongsoang, Kab. Bandung, 40288',
-      email: 'sarah.nail@mail.com',
+      email: input.contains('@') ? input : 'sarah.nail@mail.com',
     ));
     widget.navigate('Home');
   }
@@ -80,9 +88,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 150),
+                const SizedBox(height: 80),
                 const Text(
-                  'Login',
+                  'Welcome back',
                   style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
                 const SizedBox(height: 8),
@@ -131,12 +139,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     minimumSize: const Size(double.infinity, 56),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 5,
-                    shadowColor: customPink.withOpacity(0.4),
+                    shadowColor: customPink.withAlpha((0.4 * 255).round()),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Login', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                      const Text('Sign in', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 8),
                       Icon(LucideIcons.chevronRight, size: 20, color: Colors.white),
                     ],
@@ -146,20 +154,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Tautan Sign Up
                 Center(
-                  child: InkWell(
-                    onTap: () => widget.navigate('Register'),
-                    child: RichText(
-                      text: TextSpan(
-                        text: "Don't have an account? ",
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                        children: [
-                          TextSpan(
-                            text: 'Sign up',
-                            style: TextStyle(color: customPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                          ),
-                        ],
-                      ),
-                    ),
+                  child: TextButton(
+                    onPressed: () => widget.navigate('Register'),
+                    child: const Text('Create one', style: TextStyle(decoration: TextDecoration.underline)),
                   ),
                 ),
                 const SizedBox(height: 24),
