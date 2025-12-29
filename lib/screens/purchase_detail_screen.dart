@@ -75,7 +75,6 @@ class PurchaseDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusInfo = _getStatusInfo(order.status);
 
-    // Sample order items
     final orderItems = [
       {
         'name': 'OPI Top Coat High Shine Formula',
@@ -116,7 +115,6 @@ class PurchaseDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status Banner
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -148,11 +146,9 @@ class PurchaseDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // Order Timeline
             if (order.status != 'Cancelled' && order.status != 'Awaiting Payment')
               _OrderTimeline(status: order.status),
 
-            // Order Information
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -169,7 +165,6 @@ class PurchaseDetailScreen extends StatelessWidget {
                   _InfoRow(label: 'Status Pembayaran', value: 'Lunas'),
                   const SizedBox(height: 24),
 
-                  // Shipping Address
                   const Text(
                     'Alamat Pengiriman',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -198,7 +193,6 @@ class PurchaseDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Order Items
                   const Text(
                     'Produk Dipesan',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -207,7 +201,6 @@ class PurchaseDetailScreen extends StatelessWidget {
                   ...orderItems.map((item) => _OrderItemCard(item: item)),
                   const SizedBox(height: 24),
 
-                  // Payment Summary
                   const Text(
                     'Rincian Pembayaran',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -253,8 +246,157 @@ class PurchaseDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: _BottomActionBar(order: order),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade300,
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: _buildActionButton(context, order),
+        ),
+      ),
     );
+  }
+
+  Widget _buildActionButton(BuildContext context, PurchaseHistory order) {
+    if (order.status == 'Awaiting Payment') {
+      return ElevatedButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Lanjut ke pembayaran')),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: customPink,
+          minimumSize: const Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text(
+          'Bayar Sekarang',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
+    if (order.status == 'Shipped') {
+      return ElevatedButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Lacak pesanan')),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: customPink,
+          minimumSize: const Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text(
+          'Lacak Pesanan',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
+    if (order.status == 'Delivered') {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Beli lagi')),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                side: BorderSide(color: customPink),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Beli Lagi',
+                style: TextStyle(color: customPink, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Beri ulasan')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: customPink,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Beri Ulasan',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (order.status == 'Processing') {
+      return OutlinedButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Batalkan Pesanan?'),
+              content: const Text('Apakah Anda yakin ingin membatalkan pesanan ini?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Tidak'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Pesanan dibatalkan')),
+                    );
+                  },
+                  child: const Text('Ya, Batalkan', style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            ),
+          );
+        },
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 50),
+          side: const BorderSide(color: Colors.red),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text(
+          'Batalkan Pesanan',
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }
 
@@ -490,163 +632,6 @@ class _TimelineStep extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _BottomActionBar extends StatelessWidget {
-  final PurchaseHistory order;
-
-  const _BottomActionBar({required this.order});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          if (order.status == 'Awaiting Payment')
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Lanjut ke pembayaran')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: customPink,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  'Bayar Sekarang',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          if (order.status == 'Shipped')
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Lacak pesanan')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: customPink,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  'Lacak Pesanan',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          if (order.status == 'Delivered')
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Beli lagi')),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        side: BorderSide(color: customPink),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        'Beli Lagi',
-                        style: TextStyle(color: customPink, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Beri ulasan')),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: customPink,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Beri Ulasan',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (order.status == 'Processing')
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Batalkan Pesanan?'),
-                      content: const Text('Apakah Anda yakin ingin membatalkan pesanan ini?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Tidak'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pesanan dibatalkan')),
-                            );
-                          },
-                          child: const Text('Ya, Batalkan', style: TextStyle(color: Colors.red)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  side: const BorderSide(color: Colors.red),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  'Batalkan Pesanan',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }
