@@ -47,7 +47,7 @@ class BottomNavBar extends StatelessWidget {
           border: Border(top: BorderSide(color: Colors.grey.shade200)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -58,7 +58,7 @@ class BottomNavBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _NavItem(
-              icon: LucideIcons.home,
+              icon: Icons.home_outlined,
               label: "Home",
               active: determinedActiveTab == 'Home',
               onTap: () => navigate('Home'),
@@ -83,7 +83,7 @@ class BottomNavBar extends StatelessWidget {
               onTap: () => navigate('Cart'),
             ),
             _NavItem(
-              icon: LucideIcons.user,
+              icon: Icons.person_outline,
               label: "Akun",
               active: determinedActiveTab == 'Account',
               onTap: () => navigate('Account'),

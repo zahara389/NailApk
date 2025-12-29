@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
-import '../components/helper_widgets.dart';
 
 class PaymentProcessingScreen extends StatefulWidget {
   final VoidCallback goBack;
