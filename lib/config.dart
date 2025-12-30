@@ -11,7 +11,7 @@ const Color customPinkLight = Color(0xffffe0f0);
 // API Base URL
 // Android Emulator  : http://10.0.2.2:8000
 // iOS / Web / Desktop: http://127.0.0.1:8000
-const String apiBaseUrl = "http://10.174.212.209:8000";
+const String apiBaseUrl = "http://192.168.110.54:8000";
 
 // =================================================================================
 // MODEL PRODUCT
@@ -504,3 +504,14 @@ final List<NotificationItem> dummyNotifications = [
     read: true,
   ),
 ];
+
+
+bool isAssetImage(String path) {
+  return path.startsWith('assets/');
+}
+
+String resolveApiImage(String path) {
+  return "$apiBaseUrl/images/$path";
+}
+
+
