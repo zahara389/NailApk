@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../config.dart';
+import '../services/auth_service.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   final Function(String, {dynamic data}) navigate;
   final VoidCallback goBack;
 
@@ -12,13 +13,64 @@ class RegisterScreen extends StatelessWidget {
     required this.goBack,
   });
 
-  void _handleRegister() {
-    print('User Registered. Navigating to Login...');
-    navigate('Login');
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+
+  void _handleRegister() async {
+    final name = _nameController.text.trim();
+    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (name.isEmpty || username.isEmpty || email.isEmpty || password.isEmpty) {
+      _showSnackBar("Semua field harus diisi!");
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // FIX: Menambahkan field yang diminta oleh Laravel API kamu
+    Map<String, String> registerData = {
+      'name': name,
+      'username': username,
+      'email': email,
+      'password': password,
+      'password_confirmation': password, // Mengisi konfirmasi password otomatis
+      'role': 'member',                 // Mengirim role default 'member'
+    };
+
+    final bool success = await AuthService().register(registerData);
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      _showSnackBar("Registrasi Berhasil! Silakan Login.");
+      widget.navigate('Login');
+    } else {
+      _showSnackBar("Registrasi Gagal. Periksa kembali data Anda.");
+    }
   }
 
-  void _handleGuestLogin() {
-    navigate('Home');
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -26,198 +78,88 @@ class RegisterScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Lingkaran Pink
           Positioned(
-            top: -150,
-            left: -150,
+            top: -150, left: -150,
             child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                color: customPinkLight,
-                shape: BoxShape.circle,
-              ),
+              width: 300, height: 300,
+              decoration: BoxDecoration(color: customPinkLight, shape: BoxShape.circle),
             ),
           ),
-
           CustomScrollView(
             slivers: [
-              // -----------------------------
-              // FIX BACK BUTTON — TANPA ERROR
-              // -----------------------------
               SliverAppBar(
                 leading: IconButton(
                   icon: const Icon(LucideIcons.arrowLeft, size: 24),
-                  onPressed: goBack,
+                  onPressed: widget.goBack,
                 ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                pinned: false,
                 floating: true,
               ),
-
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    const SizedBox(height: 30),
-
-                    const Text(
-                      'Create account',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+                    const SizedBox(height: 20),
+                    const Text('Create account',
+                      style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
                     ),
-
                     const SizedBox(height: 8),
-
-                    Text(
-                      'Lengkapi detail Anda.',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 14,
-                      ),
-                    ),
-
+                    Text('Lengkapi detail Anda.', style: TextStyle(color: Colors.grey.shade500)),
+                    const SizedBox(height: 30),
+                    _buildTextField(_nameController, 'Nama Lengkap', LucideIcons.user),
+                    const SizedBox(height: 20),
+                    _buildTextField(_usernameController, 'Username', LucideIcons.atSign),
+                    const SizedBox(height: 20),
+                    _buildTextField(_emailController, 'Email', LucideIcons.mail, isEmail: true),
+                    const SizedBox(height: 20),
+                    _buildTextField(_passwordController, 'Password', LucideIcons.lock, isPassword: true),
                     const SizedBox(height: 40),
-
-                    // Nama
-                    TextFormField(
-                      decoration: InputDecoration(
-                        hintText: 'Nama',
-                        contentPadding: const EdgeInsets.only(bottom: 12),
-                        border: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: customPink),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Email
-                    TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        hintText: 'Email',
-                        contentPadding: const EdgeInsets.only(bottom: 12),
-                        border: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: customPink),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Password
-                    TextFormField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        hintText: 'Password',
-                        contentPadding: const EdgeInsets.only(bottom: 12),
-                        border: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: customPink),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 60),
-
-                    // Tombol Sign Up
                     ElevatedButton(
-                      onPressed: _handleRegister,
+                      onPressed: _isLoading ? null : _handleRegister,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: customPink,
                         minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 5,
-                        shadowColor: customPink.withOpacity(0.4),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Sign up',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            LucideIcons.chevronRight,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                        ],
-                      ),
+                      child: _isLoading 
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('Sign up', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // Sign In Link
+                    const SizedBox(height: 20),
                     Center(
                       child: InkWell(
-                        onTap: () => navigate('Login'),
+                        onTap: () => widget.navigate('Login'),
                         child: RichText(
                           text: TextSpan(
                             text: "Already have an account? ",
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 14,
-                            ),
+                            style: TextStyle(color: Colors.grey.shade600),
                             children: [
-                              TextSpan(
-                                text: 'Sign in',
-                                style: TextStyle(
-                                  color: customPink,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
+                              TextSpan(text: 'Sign in', style: TextStyle(color: customPink, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // Tombol Guest
-                    Center(
-                      child: TextButton(
-                        onPressed: _handleGuestLogin,
-                        child: Text(
-                          'Lanjut sebagai Guest',
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 14,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 50),
                   ]),
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {bool isEmail = false, bool isPassword = false}) {
+    return TextFormField(
+      controller: controller,
+      obscureText: isPassword,
+      keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: Icon(icon, size: 20),
+        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: customPink)),
       ),
     );
   }

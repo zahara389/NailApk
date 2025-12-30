@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../config.dart';
+import '../config.dart'; // Pastikan customPink dll ada di sini
+import '../services/auth_service.dart';
+import '../helpers/session_helper.dart';
 
 class LoginScreen extends StatefulWidget {
   final Function(String, {dynamic data}) navigate;
   final Function(bool) setIsLoggedIn;
   final Function(String) setUserName;
-  final Function(Address) setUserAddress;
+  final Function(dynamic) setUserAddress; // Sesuaikan tipe data Address kamu
 
   const LoginScreen({
     super.key,
@@ -22,39 +24,59 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _passwordVisible = false;
-  final TextEditingController _usernameController = TextEditingController(text: 'Sarah');
-  final TextEditingController _passwordController = TextEditingController(text: 'password123');
+  bool _isLoading = false; // Status loading
+  
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  void _handleLogin() {
-    final input = _usernameController.text.trim();
-    String displayName;
-    if (input.contains('@')) {
-      final local = input.split('@').first;
-      displayName = local.isEmpty ? 'Sarah' : '${local[0].toUpperCase()}${local.substring(1)}';
-    } else {
-      displayName = input.isEmpty ? 'Sarah' : input;
+  void _handleLogin() async {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      _showError("Harap isi username dan password");
+      return;
     }
 
-    widget.setIsLoggedIn(true);
-    widget.setUserName(displayName);
-    widget.setUserAddress(Address(
-      name: displayName,
-      phone: '0812-3456-7890',
-      address: 'Jl. Bojongsoang No. 10, Kecamatan Bojongsoang, Kab. Bandung, 40288',
-      email: input.contains('@') ? input : 'sarah.nail@mail.com',
-    ));
-    widget.navigate('Home');
+    setState(() => _isLoading = true);
+
+    // Proses tembak API ke PABW
+    final userData = await AuthService().login(username, password);
+
+    setState(() => _isLoading = false);
+
+    if (userData != null) {
+      // 1. Set Status Login
+      widget.setIsLoggedIn(true);
+      
+      // 2. Ambil nama dari DB
+      widget.setUserName(userData['name'] ?? userData['username']);
+      
+      // 3. Set Alamat dari DB
+      // Sesuaikan constructor Address() dengan class yang kamu punya
+      widget.setUserAddress(Address(
+        name: userData['name'] ?? '',
+        phone: userData['phone'] ?? '',
+        address: userData['address'] ?? 'Alamat belum diatur',
+        email: userData['email'] ?? '',
+      ));
+
+      // 4. Pindah ke Home
+      widget.navigate('Home');
+    } else {
+      _showError("Username atau Password salah!");
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   void _handleGuestLogin() {
     widget.setIsLoggedIn(false);
     widget.setUserName('Guest');
-    widget.setUserAddress(Address(
-      name: 'Guest',
-      phone: '',
-      address: 'Harap login untuk mengisi alamat.',
-      email: '',
-    ));
     widget.navigate('Home');
   }
 
@@ -70,17 +92,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Bentuk Lingkaran Pink di Kiri Atas
           Positioned(
-            top: -150,
-            left: -150,
+            top: -150, left: -150,
             child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                color: customPinkLight,
-                shape: BoxShape.circle,
-              ),
+              width: 300, height: 300,
+              decoration: BoxDecoration(color: customPinkLight, shape: BoxShape.circle),
             ),
           ),
           SingleChildScrollView(
@@ -88,91 +104,75 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 80),
+                const SizedBox(height: 100),
                 const Text(
                   'Welcome back',
-                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Masuk dengan akun Anda.',
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 40),
-
-                // Form Input
+                
+                // Input Username
                 TextFormField(
                   controller: _usernameController,
-                  decoration: InputDecoration(
-                    hintText: 'Nama Pengguna',
-                    prefixIcon: const Icon(LucideIcons.user, color: Colors.grey),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: customPink)),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                  ),
+                  decoration: _inputDecoration('Username', LucideIcons.user),
                 ),
                 const SizedBox(height: 16),
+                
+                // Input Password
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_passwordVisible,
-                  decoration: InputDecoration(
-                    hintText: 'Password',
-                    prefixIcon: const Icon(LucideIcons.lock, color: Colors.grey),
-                    suffixIcon: InkWell(
-                      onTap: () => setState(() => _passwordVisible = !_passwordVisible),
-                      child: Icon(_passwordVisible ? LucideIcons.eye : LucideIcons.eyeOff, color: Colors.grey),
+                  decoration: _inputDecoration('Password', LucideIcons.lock).copyWith(
+                    suffixIcon: IconButton(
+                      icon: Icon(_passwordVisible ? LucideIcons.eye : LucideIcons.eyeOff),
+                      onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
                     ),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: customPink)),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                   ),
                 ),
                 const SizedBox(height: 32),
 
-                // Tombol Login
+                // Tombol Sign In
                 ElevatedButton(
-                  onPressed: _handleLogin,
+                  onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: customPink,
                     minimumSize: const Size(double.infinity, 56),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 5,
-                    shadowColor: customPink.withAlpha((0.4 * 255).round()),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Sign in', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 8),
-                      Icon(LucideIcons.chevronRight, size: 20, color: Colors.white),
-                    ],
-                  ),
+                  child: _isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Sign in', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
-                const SizedBox(height: 24),
 
-                // Tautan Sign Up
+                const SizedBox(height: 24),
                 Center(
                   child: TextButton(
                     onPressed: () => widget.navigate('Register'),
-                    child: const Text('Create one', style: TextStyle(decoration: TextDecoration.underline)),
+                    child: const Text('Create Account', style: TextStyle(decoration: TextDecoration.underline)),
                   ),
                 ),
-                const SizedBox(height: 24),
-
-                // Tombol Lanjut sebagai Guest
                 Center(
                   child: TextButton(
                     onPressed: _handleGuestLogin,
-                    child: Text('Lanjut sebagai Guest', style: TextStyle(color: Colors.grey.shade500, fontSize: 14, decoration: TextDecoration.underline)),
+                    child: Text('Lanjut sebagai Guest', style: TextStyle(color: Colors.grey.shade500)),
                   ),
                 ),
-                const SizedBox(height: 50),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint, IconData icon) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon, color: Colors.grey),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: customPink),
       ),
     );
   }
