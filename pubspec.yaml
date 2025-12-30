@@ -11,9 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  lucide_icons: ^0.257.0 # Versi yang telah dikonfirmasi bekerja
+  lucide_icons: ^0.257.0 
   dio: ^5.3.0
-  image_picker: ^1.0.7   # ✅ TAMBAHKAN INI
+  image_picker: ^1.0.7 
+  shared_preferences: ^2.2.2
 
 
 
