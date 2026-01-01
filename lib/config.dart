@@ -8,10 +8,19 @@ import 'package:flutter/material.dart';
 const Color customPink = Color(0xffff80bf);
 const Color customPinkLight = Color(0xffffe0f0);
 
-// API Base URL
+// =================================================================================
+// API CONFIG (FINAL)
+// =================================================================================
+
 // Android Emulator  : http://10.0.2.2:8000
 // iOS / Web / Desktop: http://127.0.0.1:8000
-const String apiBaseUrl = "http://192.168.110.54:8000";
+const String apiBaseUrl = "http://127.0.0.1:8000";
+
+// Path API (jangan digabung ke baseUrl)
+const String apiPath = "/api";
+
+// Base URL untuk gambar produk
+const String imageBaseUrl = "$apiBaseUrl/images/products";
 
 // =================================================================================
 // MODEL PRODUCT
