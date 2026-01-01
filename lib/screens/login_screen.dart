@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../config.dart'; // Pastikan customPink dll ada di sini
+import '../config.dart';
 import '../services/auth_service.dart';
 import '../helpers/session_helper.dart';
 
@@ -8,7 +8,7 @@ class LoginScreen extends StatefulWidget {
   final Function(String, {dynamic data}) navigate;
   final Function(bool) setIsLoggedIn;
   final Function(String) setUserName;
-  final Function(dynamic) setUserAddress; // Sesuaikan tipe data Address kamu
+  final Function(dynamic) setUserAddress;
 
   const LoginScreen({
     super.key,
@@ -24,11 +24,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _passwordVisible = false;
-  bool _isLoading = false; // Status loading
-  
+  bool _isLoading = false;
+
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // ===============================
+  // HANDLE LOGIN (FIXED)
+  // ===============================
   void _handleLogin() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
@@ -40,26 +43,34 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    // Proses tembak API ke PABW
-    final userData = await AuthService().login(username, password);
+    // 🔥 LOGIN → DAPAT TOKEN
+    final token = await AuthService().login(username, password);
 
     setState(() => _isLoading = false);
 
-    if (userData != null) {
-      // 1. Set Status Login
+    if (token != null) {
+      // 🔥 AMBIL USER DARI SESSION
+      final userData = await SessionHelper.getUser();
+
+      debugPrint("LOGIN SUCCESS, TOKEN SIAP DIPAKAI");
+
+      // 1. Set status login
       widget.setIsLoggedIn(true);
-      
-      // 2. Ambil nama dari DB
-      widget.setUserName(userData['name'] ?? userData['username']);
-      
-      // 3. Set Alamat dari DB
-      // Sesuaikan constructor Address() dengan class yang kamu punya
-      widget.setUserAddress(Address(
-        name: userData['name'] ?? '',
-        phone: userData['phone'] ?? '',
-        address: userData['address'] ?? 'Alamat belum diatur',
-        email: userData['email'] ?? '',
-      ));
+
+      // 2. Set nama user
+      widget.setUserName(
+        userData?['name'] ?? userData?['username'] ?? 'User',
+      );
+
+      // 3. Set alamat user (AMAN)
+      widget.setUserAddress(
+        Address(
+          name: userData?['name'] ?? '',
+          phone: userData?['phone'] ?? '',
+          address: userData?['address'] ?? 'Alamat belum diatur',
+          email: userData?['email'] ?? '',
+        ),
+      );
 
       // 4. Pindah ke Home
       widget.navigate('Home');
@@ -93,10 +104,15 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         children: [
           Positioned(
-            top: -150, left: -150,
+            top: -150,
+            left: -150,
             child: Container(
-              width: 300, height: 300,
-              decoration: BoxDecoration(color: customPinkLight, shape: BoxShape.circle),
+              width: 300,
+              height: 300,
+              decoration: const BoxDecoration(
+                color: customPinkLight,
+                shape: BoxShape.circle,
+              ),
             ),
           ),
           SingleChildScrollView(
@@ -110,51 +126,74 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 40),
-                
-                // Input Username
+
+                // Username
                 TextFormField(
                   controller: _usernameController,
                   decoration: _inputDecoration('Username', LucideIcons.user),
                 ),
                 const SizedBox(height: 16),
-                
-                // Input Password
+
+                // Password
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_passwordVisible,
-                  decoration: _inputDecoration('Password', LucideIcons.lock).copyWith(
+                  decoration: _inputDecoration('Password', LucideIcons.lock)
+                      .copyWith(
                     suffixIcon: IconButton(
-                      icon: Icon(_passwordVisible ? LucideIcons.eye : LucideIcons.eyeOff),
-                      onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
+                      icon: Icon(
+                        _passwordVisible
+                            ? LucideIcons.eye
+                            : LucideIcons.eyeOff,
+                      ),
+                      onPressed: () =>
+                          setState(() => _passwordVisible = !_passwordVisible),
                     ),
                   ),
                 ),
                 const SizedBox(height: 32),
 
-                // Tombol Sign In
+                // BUTTON LOGIN
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: customPink,
                     minimumSize: const Size(double.infinity, 56),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: _isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Sign in', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Sign in',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
 
                 const SizedBox(height: 24),
                 Center(
                   child: TextButton(
                     onPressed: () => widget.navigate('Register'),
-                    child: const Text('Create Account', style: TextStyle(decoration: TextDecoration.underline)),
+                    child: const Text(
+                      'Create Account',
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
                 ),
                 Center(
                   child: TextButton(
                     onPressed: _handleGuestLogin,
-                    child: Text('Lanjut sebagai Guest', style: TextStyle(color: Colors.grey.shade500)),
+                    child: Text(
+                      'Lanjut sebagai Guest',
+                      style: TextStyle(color: Colors.grey.shade500),
+                    ),
                   ),
                 ),
               ],
@@ -172,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: customPink),
+        borderSide: const BorderSide(color: customPink),
       ),
     );
   }

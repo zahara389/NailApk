@@ -10,8 +10,13 @@ import '../components/product_card.dart';
 class AllProductsScreen extends StatelessWidget {
   final VoidCallback goBack;
   final Function(String, {dynamic data}) navigate;
+
+  // DATA PRODUK
   final List<Product> newArrivals;
+
+  // 🔥 CALLBACK ADD TO CART (DARI PARENT)
   final Function(Product) handleAddToCart;
+
   final Function(List<Product>) setNewArrivals;
 
   final Future<void> Function()? onRefresh;
@@ -73,7 +78,7 @@ class AllProductsScreen extends StatelessWidget {
         ],
       ),
 
-      // ================= GRID =================
+      // ================= GRID PRODUK =================
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: newArrivals.length,
@@ -81,19 +86,18 @@ class AllProductsScreen extends StatelessWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.65, // PAS DENGAN ProductCard
+          childAspectRatio: 0.65,
         ),
         itemBuilder: (context, index) {
           final product = newArrivals[index];
 
           return GestureDetector(
-            onLongPress: () =>
-                _showItemOptions(context, product),
+            onLongPress: () => _showItemOptions(context, product),
             child: ProductCard(
               product: product,
               navigateToPdp: (p) => navigate('PDP', data: p),
-              handleFavoriteToggle: _handleFavoriteToggle, // ✅ FIX ERROR
-              handleAddToCart: handleAddToCart,
+              handleFavoriteToggle: _handleFavoriteToggle,
+              handleAddToCart: handleAddToCart, // ✅ INI SUDAH BENAR
             ),
           );
         },

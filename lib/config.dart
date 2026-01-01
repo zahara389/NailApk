@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 
 // =================================================================================
 // KONFIGURASI GLOBAL
@@ -9,18 +10,36 @@ const Color customPink = Color(0xffff80bf);
 const Color customPinkLight = Color(0xffffe0f0);
 
 // =================================================================================
-// API CONFIG (FINAL)
+// API CONFIG (FINAL & BENAR)
 // =================================================================================
 
 // Android Emulator  : http://10.0.2.2:8000
 // iOS / Web / Desktop: http://127.0.0.1:8000
 const String apiBaseUrl = "http://127.0.0.1:8000";
 
-// Path API (jangan digabung ke baseUrl)
-const String apiPath = "/api";
+// FULL API PATH (WAJIB FULL)
+const String apiPath = "$apiBaseUrl/api";
 
 // Base URL untuk gambar produk
 const String imageBaseUrl = "$apiBaseUrl/images/products";
+
+// =================================================================================
+// DIO FACTORY (WAJIB UNTUK CART)
+// =================================================================================
+Dio createDio({String? token}) {
+  return Dio(
+    BaseOptions(
+      baseUrl: apiBaseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      headers: {
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    ),
+  );
+}
+
 
 // =================================================================================
 // MODEL PRODUCT

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:dio/dio.dart';
 
 // Screens
 import 'screens/account_screen.dart';
@@ -23,10 +24,12 @@ import 'screens/voucher_screen.dart';
 import 'screens/purchase_history_screen.dart';
 import 'screens/purchase_detail_screen.dart';
 
-// Components, Services & Models
+// Config, Components, Services
 import 'config.dart';
 import 'components/bottom_nav_bar.dart';
 import 'services/api_service.dart';
+import 'services/cart_service.dart';
+import 'helpers/session_helper.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,16 +55,6 @@ class NailStudioApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSwatch().copyWith(secondary: customPink),
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Inter',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          titleTextStyle: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-          iconTheme: IconThemeData(color: Colors.black),
-        ),
       ),
       home: const AppRouter(),
     );
@@ -82,10 +75,11 @@ class _AppRouterState extends State<AppRouter> {
 
   bool _isLoggedIn = false;
   String _userName = 'Guest';
+
   Address _userAddress = Address(
     name: 'Guest',
     phone: '',
-    address: 'Harap login untuk isi alamat.',
+    address: 'Harap login',
     email: '',
   );
 
@@ -93,77 +87,56 @@ class _AppRouterState extends State<AppRouter> {
   List<Product> _newArrivals = [];
   Product? _selectedProduct;
 
+  late final Dio _dio;
   late final ApiService _apiService;
-
-  List<GalleryItem> _galleryItems = initialGalleryItems;
-  GalleryItem? _selectedGalleryItem;
-  PaymentDetails? _paymentDetails;
-  List<PurchaseHistory> _purchaseHistory = List.from(dummyPurchaseHistory);
-  List<Booking> _bookingHistory = List.from(dummyBookingHistory);
-  List<NotificationItem> _notifications = List.from(dummyNotifications);
-  List<Voucher> _vouchers = List.from(dummyVouchers);
+  late final CartService _cartService;
 
   @override
   void initState() {
     super.initState();
-    _apiService = ApiService();
+
+    _dio = Dio(BaseOptions(
+      baseUrl: apiBaseUrl,
+      headers: {'Accept': 'application/json'},
+    ));
+
+    _apiService = ApiService(dio: _dio);
+    _cartService = CartService(_dio);
+
     _loadProducts();
   }
 
+  // ================= LOAD PRODUCTS =================
   Future<void> _loadProducts() async {
+    final products = await _apiService.fetchProducts();
+    setState(() => _newArrivals = products);
+  }
+
+  // ================= ADD TO CART (API → DB) =================
+  Future<void> _handleAddToCart(Product product) async {
     try {
-      final products = await _apiService.fetchProducts();
-      setState(() => _newArrivals = products);
-      debugPrint("API: Berhasil memuat ${products.length} produk.");
+      await _cartService.addToCart(
+        productId: product.id,
+        quantity: 1,
+      );
+
+      debugPrint("✅ ADD TO CART MASUK DB: ${product.name}");
+
+      setState(() {
+        final index = _cart.indexWhere((c) => c.product.id == product.id);
+        if (index == -1) {
+          _cart.add(CartItem(product: product, quantity: 1));
+        } else {
+          _cart[index] =
+              _cart[index].copyWith(quantity: _cart[index].quantity + 1);
+        }
+      });
     } catch (e) {
-      debugPrint('API Error (Load): $e');
+      debugPrint("❌ ADD TO CART ERROR: $e");
     }
   }
 
-  Future<Product?> _createProduct(
-    Map<String, dynamic> payload, {
-    String? imagePath,
-  }) async {
-    try {
-      final p = await _apiService.createProduct(payload, imagePath: imagePath);
-      if (p != null) {
-        _loadProducts();
-      }
-      return p;
-    } catch (e) {
-      debugPrint('API Error (Create): $e');
-      return null;
-    }
-  }
-
-  Future<Product?> _updateProduct(
-    int id,
-    Map<String, dynamic> payload, {
-    String? imagePath,
-  }) async {
-    try {
-      final p = await _apiService.updateProduct(id, payload, imagePath: imagePath);
-      if (p != null) {
-        _loadProducts();
-      }
-      return p;
-    } catch (e) {
-      debugPrint('API Error (Update): $e');
-      return null;
-    }
-  }
-
-  Future<bool> _deleteProduct(int id) async {
-    try {
-      await _apiService.deleteProduct(id);
-      _loadProducts();
-      return true;
-    } catch (e) {
-      debugPrint('API Error (Delete): $e');
-      return false;
-    }
-  }
-
+  // ================= NAVIGATION =================
   void navigate(String view, {dynamic data}) {
     setState(() {
       _navigationData = data;
@@ -174,10 +147,6 @@ class _AppRouterState extends State<AppRouter> {
       if (view == 'PDP' && data is Product) {
         _selectedProduct = data;
       }
-      if (view == 'GalleryDetail' && data is GalleryItem) {
-        _selectedGalleryItem = data;
-      }
-      if (view == 'OrderSuccess') _cart.clear();
     });
   }
 
@@ -185,71 +154,25 @@ class _AppRouterState extends State<AppRouter> {
     if (_history.length > 1) {
       _history.removeLast();
       setState(() => _currentView = _history.last);
-    } else {
-      navigate('Home');
     }
   }
 
-  void _addPurchaseToHistory(PurchaseHistory order) {
-    setState(() {
-      _purchaseHistory.insert(0, order);
-    });
-  }
-
-  void _addBookingToHistory(Booking booking) {
-    setState(() {
-      _bookingHistory.insert(0, booking);
-    });
-  }
-
-  void _toggleProductFavorite(Product product) {
-    setState(() {
-      final index = _newArrivals.indexWhere((p) => p.id == product.id);
-      if (index != -1) {
-        _newArrivals[index] = _newArrivals[index].copyWith(
-          isFavorite: !_newArrivals[index].isFavorite,
-        );
-      }
-    });
-  }
-
-  void _toggleGalleryFavorite(int itemId) {
-    setState(() {
-      final index = _galleryItems.indexWhere((g) => g.id == itemId);
-      if (index != -1) {
-        _galleryItems[index] = _galleryItems[index].copyWith(
-          isFavorite: !_galleryItems[index].isFavorite,
-        );
-      }
-      if (_selectedGalleryItem?.id == itemId) {
-        _selectedGalleryItem = _galleryItems[index];
-      }
-    });
-  }
-
-  void _markNotificationAsRead(int notificationId) {
-    setState(() {
-      final index = _notifications.indexWhere((n) => n.id == notificationId);
-      if (index != -1) {
-        _notifications[index] = _notifications[index].copyWith(read: true);
-      }
-    });
-  }
-
+  // ================= RENDER =================
   Widget _renderView() {
     switch (_currentView) {
       case 'Login':
         return LoginScreen(
           navigate: navigate,
-          setIsLoggedIn: (v) => setState(() => _isLoggedIn = v),
+          setIsLoggedIn: (v) async {
+            final token = await SessionHelper.getToken();
+            if (token != null) {
+              _dio.options.headers['Authorization'] = 'Bearer $token';
+              debugPrint("TOKEN LOGIN: $token");
+            }
+            setState(() => _isLoggedIn = v);
+          },
           setUserName: (name) => setState(() => _userName = name),
           setUserAddress: (addr) => setState(() => _userAddress = addr),
-        );
-
-      case 'Register':
-        return RegisterScreen(
-          navigate: navigate,
-          goBack: goBack,
         );
 
       case 'Home':
@@ -258,10 +181,8 @@ class _AppRouterState extends State<AppRouter> {
           userDisplayName: _isLoggedIn ? _userName : 'Guest',
           cartCount: _cart.length,
           newArrivals: _newArrivals,
-          setNewArrivals: (list) => setState(() => _newArrivals = list),
-          handleAddToCart: (p) => setState(() {
-            _cart.add(CartItem(product: p, quantity: 1));
-          }),
+          setNewArrivals: (l) => setState(() => _newArrivals = l),
+          handleAddToCart: _handleAddToCart,
         );
 
       case 'AllProducts':
@@ -269,226 +190,39 @@ class _AppRouterState extends State<AppRouter> {
           goBack: goBack,
           navigate: navigate,
           newArrivals: _newArrivals,
-          handleAddToCart: (p) => setState(() {
-            _cart.add(CartItem(product: p, quantity: 1));
-          }),
-          setNewArrivals: (list) => setState(() => _newArrivals = list),
+          handleAddToCart: _handleAddToCart,
+          setNewArrivals: (l) => setState(() => _newArrivals = l),
           onRefresh: _loadProducts,
-          onCreate: (payload, {imagePath}) =>
-              _createProduct(payload, imagePath: imagePath),
-          onUpdate: (id, payload, {imagePath}) =>
-              _updateProduct(id, payload, imagePath: imagePath),
-          onDelete: _deleteProduct,
         );
 
       case 'PDP':
         return ProductDetailScreen(
           goBack: goBack,
           navigate: navigate,
-          product: _selectedProduct ?? _newArrivals.first,
+          product: _selectedProduct!,
           newArrivals: _newArrivals,
           cartCount: _cart.length,
-          setNewArrivals: (list) => setState(() => _newArrivals = list),
-          handleAddToCart: (p) => setState(() {
-            _cart.add(CartItem(product: p, quantity: 1));
-          }),
-        );
-
-      case 'Cart':
-        return ShoppingCartScreen(
-          goBack: goBack,
-          navigate: navigate,
-          cart: _cart,
-          updateCartQuantity: (productId, delta) {
-            setState(() {
-              final index = _cart.indexWhere((item) => item.product.id == productId);
-              if (index != -1) {
-                if (delta == -9999) {
-                  // Hapus item
-                  _cart.removeAt(index);
-                } else {
-                  // Update quantity
-                  final newQuantity = _cart[index].quantity + delta;
-                  if (newQuantity <= 0) {
-                    _cart.removeAt(index);
-                  } else {
-                    _cart[index] = _cart[index].copyWith(quantity: newQuantity);
-                  }
-                }
-              }
-            });
-          },
-        );
-
-      case 'Checkout':
-        return CheckoutScreen(
-          goBack: goBack,
-          navigate: navigate,
-          cart: _cart,
-          initialAddress: _userAddress,
-          setPaymentDetails: (details) => setState(() {
-            _paymentDetails = details;
-          }),
-          addPurchaseToHistory: _addPurchaseToHistory,
-        );
-
-      case 'PaymentProcessing':
-        return PaymentProcessingScreen(
-          goBack: goBack,
-          navigate: navigate,
-          paymentDetails: _paymentDetails,
-          addPurchaseToHistory: _addPurchaseToHistory,
-        );
-
-      case 'OrderSuccess':
-        return OrderSuccessScreen(
-          navigate: navigate,
-        );
-
-      case 'Gallery':
-        return GalleryScreen(
-          goBack: goBack,
-          navigate: navigate,
-          galleryItems: _galleryItems,
-          toggleFavorite: _toggleGalleryFavorite,
-        );
-
-      case 'GalleryDetail':
-        return GalleryDetailScreen(
-          goBack: goBack,
-          navigate: navigate,
-          item: _selectedGalleryItem ?? _galleryItems.first,
-          toggleFavorite: _toggleGalleryFavorite,
-        );
-
-      case 'Booking':
-        return BookingScreen(
-          goBack: goBack,
-          navigate: navigate,
-          userName: _userName,
-          addBookingToHistory: _addBookingToHistory,
-        );
-
-      case 'BookingHistory':
-        return BookingHistoryScreen(
-          goBack: goBack,
-          navigate: navigate,
-          history: _bookingHistory,
-        );
-
-      case 'Favorites':
-        return FavoritesScreen(
-          goBack: goBack,
-          navigate: navigate,
-          newArrivals: _newArrivals,
-          galleryItems: _galleryItems,
-        );
-
-      case 'Notification':
-        return NotificationScreen(
-          goBack: goBack,
-          navigate: navigate,
-          notifications: _notifications,
-          markAsRead: _markNotificationAsRead,
-        );
-
-      case 'Account':
-        return AccountScreen(
-          goBack: goBack,
-          navigate: navigate,
-          isLoggedIn: _isLoggedIn,
-          setIsLoggedIn: (v) => setState(() => _isLoggedIn = v),
-          userName: _userName,
-          purchaseHistory: _purchaseHistory,
-          notifications: _notifications,
-          userAddress: _userAddress,
-          currentView: _currentView,
-        );
-
-      case 'Settings':
-        return SettingsScreen(
-          goBack: goBack,
-          navigate: navigate,
-        );
-
-      case 'HelpFAQ':
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.help_outline, size: 100, color: customPink),
-              const SizedBox(height: 20),
-              const Text('Help & FAQ', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: goBack,
-                style: ElevatedButton.styleFrom(backgroundColor: customPink),
-                child: const Text('Kembali'),
-              ),
-            ],
-          ),
-        );
-
-      case 'Voucher':
-        return VoucherScreen(
-          goBack: goBack,
-          navigate: navigate,
-          vouchers: _vouchers,
-        );
-
-      case 'PurchaseHistory':
-        return PurchaseHistoryScreen(
-          goBack: goBack,
-          navigate: navigate,
-          purchaseHistory: _purchaseHistory,
-        );
-
-      case 'PurchaseDetail':
-        return PurchaseDetailScreen(
-          goBack: goBack,
-          order: _navigationData as PurchaseHistory,
+          setNewArrivals: (l) => setState(() => _newArrivals = l),
+          handleAddToCart: _handleAddToCart,
         );
 
       default:
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 100, color: customPink),
-              const SizedBox(height: 20),
-              Text(
-                'Screen: $_currentView',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const Text('Screen tidak ditemukan'),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () => navigate('Home'),
-                style: ElevatedButton.styleFrom(backgroundColor: customPink),
-                child: const Text('Kembali ke Home'),
-              ),
-            ],
-          ),
-        );
+        return const SizedBox.shrink();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        top: false,
-        child: Stack(
-          children: [
-            _renderView(),
-            BottomNavBar(
-              currentView: _currentView,
-              cartCount: _cart.length,
-              navigate: navigate,
-            ),
-          ],
-        ),
+      body: Stack(
+        children: [
+          _renderView(),
+          BottomNavBar(
+            currentView: _currentView,
+            cartCount: _cart.length,
+            navigate: navigate,
+          ),
+        ],
       ),
     );
   }
