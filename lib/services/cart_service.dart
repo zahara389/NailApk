@@ -8,10 +8,10 @@ class CartService {
 
   CartService(this._dio);
 
-  // ===============================
+  // =========================================================
   // ADD PRODUCT TO CART
   // POST /api/cart/add
-  // ===============================
+  // =========================================================
   Future<void> addToCart({
     required int productId,
     int quantity = 1,
@@ -20,22 +20,45 @@ class CartService {
       final res = await _dio.post(
         '$apiPath/cart/add',
         data: {
-          "product_id": productId,
-          "quantity": quantity,
+          'product_id': productId,
+          'quantity': quantity,
         },
       );
 
-      debugPrint('Add to cart success: ${res.data}');
+      debugPrint('✅ Add to cart success: ${res.data}');
     } catch (e) {
-      debugPrint('Add to cart failed: $e');
+      debugPrint('❌ Add to cart failed: $e');
       rethrow;
     }
   }
 
-  // ===============================
+  // =========================================================
+  // GET CART (AMBIL DARI DATABASE)
+  // GET /api/cart
+  // =========================================================
+  Future<List<CartItem>> fetchCart() async {
+    try {
+      final res = await _dio.get('$apiPath/cart');
+
+      final List items = res.data['items'] ?? [];
+
+      return items.map<CartItem>((e) {
+        return CartItem(
+          id: e['id'], // 🔥 cart_items.id (WAJIB)
+          quantity: e['quantity'] ?? 1,
+          product: Product.fromApi(e['product']),
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('❌ Fetch cart failed: $e');
+      return [];
+    }
+  }
+
+  // =========================================================
   // UPDATE CART ITEM
-  // PUT /api/cart/item/{id}
-  // ===============================
+  // PUT /api/cart/item/{cartItemId}
+  // =========================================================
   Future<void> updateCartItem({
     required int cartItemId,
     required int quantity,
@@ -44,38 +67,41 @@ class CartService {
       await _dio.put(
         '$apiPath/cart/item/$cartItemId',
         data: {
-          "quantity": quantity,
+          'quantity': quantity,
         },
       );
+
+      debugPrint('✅ Update cart item success');
     } catch (e) {
-      debugPrint('Update cart failed: $e');
+      debugPrint('❌ Update cart failed: $e');
       rethrow;
     }
   }
 
-  // ===============================
+  // =========================================================
   // REMOVE CART ITEM
-  // DELETE /api/cart/item/{id}
-  // ===============================
+  // DELETE /api/cart/item/{cartItemId}
+  // =========================================================
   Future<void> removeCartItem(int cartItemId) async {
     try {
       await _dio.delete('$apiPath/cart/item/$cartItemId');
+      debugPrint('✅ Remove cart item success');
     } catch (e) {
-      debugPrint('Remove cart item failed: $e');
+      debugPrint('❌ Remove cart item failed: $e');
       rethrow;
     }
   }
 
-  // ===============================
+  // =========================================================
   // CHECKOUT
   // POST /api/cart/checkout
-  // ===============================
+  // =========================================================
   Future<void> checkout() async {
     try {
       final res = await _dio.post('$apiPath/cart/checkout');
-      debugPrint('Checkout response: ${res.data}');
+      debugPrint('✅ Checkout success: ${res.data}');
     } catch (e) {
-      debugPrint('Checkout failed: $e');
+      debugPrint('❌ Checkout failed: $e');
       rethrow;
     }
   }
