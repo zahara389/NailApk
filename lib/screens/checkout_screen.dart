@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../config.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -50,6 +55,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int _calculateShippingCost(int subtotal) {
     const fixedCost = 20000;
     return subtotal > 500000 ? 0 : fixedCost;
+  }
+
+  Future<void> _downloadQris() async {
+    try {
+      // Request permission only where it matters.
+      // On Android 10+ saving to MediaStore typically doesn't require storage permission.
+      if (Platform.isAndroid) {
+        await Permission.storage.request();
+      } else if (Platform.isIOS) {
+        await Permission.photosAddOnly.request();
+      }
+
+      final byteData = await rootBundle.load('assets/images/qris-code.jpg');
+      final Uint8List bytes = byteData.buffer.asUint8List();
+
+      final result = await ImageGallerySaver.saveImage(
+        bytes,
+        quality: 100,
+        name: 'qris-${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      final dynamic isSuccess = result is Map ? (result['isSuccess'] ?? result['success']) : null;
+      final bool ok = isSuccess == true;
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ok ? 'QRIS berhasil disimpan ke galeri.' : 'Gagal menyimpan QRIS.'),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal menyimpan QRIS.')),
+      );
+    }
   }
 
   void _handlePlaceOrder() {
@@ -168,6 +209,70 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     onSelect: () => setState(() => _selectedPayment = method['key'] as String),
                   ),
                 )),
+
+                // QRIS Preview (muncul hanya jika QRIS dipilih)
+                if (_selectedPayment == 'QRIS') ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Scan QRIS untuk membayar',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 10),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/qris-code.jpg',
+                            height: 220,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Nominal: ${formatRupiah(total)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: customPink,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Pastikan membayar sesuai nominal di atas.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: customPink,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            onPressed: _downloadQris,
+                            icon: const Icon(LucideIcons.download, color: Colors.white, size: 18),
+                            label: const Text(
+                              'Download QRIS',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 24),
 

@@ -96,10 +96,35 @@ class CartService {
   // CHECKOUT
   // POST /api/cart/checkout
   // =========================================================
-  Future<void> checkout() async {
+  Future<PurchaseHistory> checkout({required int itemsCount}) async {
     try {
       final res = await _dio.post('$apiPath/cart/checkout');
+
+      final dynamic payload = res.data;
+      final dynamic data = payload is Map ? payload['data'] : null;
+
+      final orderNumber = (data is Map ? data['order_number'] : null)?.toString() ??
+          'ORD${(DateTime.now().millisecondsSinceEpoch % 100000).toString().padLeft(5, '0')}';
+
+      final rawStatus = (data is Map ? data['order_status'] : null)?.toString() ?? 'Processing';
+      final status = rawStatus == 'Pending' ? 'Processing' : rawStatus;
+
+      final totalAmountNum = (data is Map ? data['total_amount'] : null);
+      final totalAmount = (totalAmountNum is num) ? totalAmountNum.round() : 0;
+
+      final today = DateTime.now();
+      final date = '${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      final newOrder = PurchaseHistory(
+        id: orderNumber,
+        date: date,
+        total: totalAmount,
+        status: status,
+        items: itemsCount,
+      );
+
       debugPrint('✅ Checkout success: ${res.data}');
+      return newOrder;
     } catch (e) {
       debugPrint('❌ Checkout failed: $e');
       rethrow;

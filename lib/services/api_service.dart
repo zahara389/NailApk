@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../config.dart';
-import '../screens/all_products_screen.dart'; // untuk model Product
 
 class ApiService {
   final Dio _dio;
@@ -174,6 +173,82 @@ class ApiService {
       throw Exception(
         'Gagal hapus produk: ${e.response?.data['message'] ?? e.message}',
       );
+    }
+  }
+
+  // ===========================================================================
+  // GET /api/orders (requires auth)
+  // ===========================================================================
+  Future<List<PurchaseHistory>> fetchOrders() async {
+    try {
+      final res = await _dio.get('$apiPath/orders');
+
+      if (res.statusCode == 200) {
+        final dynamic raw = res.data;
+        if (raw is List) {
+          return raw.map<PurchaseHistory>((e) {
+            final map = (e is Map)
+                ? Map<String, dynamic>.from(e)
+                : <String, dynamic>{};
+
+            final orderNumber = map['order_number']?.toString() ??
+                map['id']?.toString() ??
+                'ORD-UNKNOWN';
+
+            final createdAtRaw = map['created_at']?.toString();
+            final createdAt = createdAtRaw != null
+                ? DateTime.tryParse(createdAtRaw)
+                : null;
+            final dt = createdAt ?? DateTime.now();
+            final date =
+                '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+
+            final totalRaw = map['total_amount'];
+            final total = (totalRaw is num)
+                ? totalRaw.round()
+                : (double.tryParse(totalRaw?.toString() ?? '')?.round() ?? 0);
+
+            final itemsRaw = map['items'];
+            final itemsCount = (itemsRaw is List) ? itemsRaw.length : 0;
+
+            final statusRaw = map['order_status']?.toString() ?? 'Processing';
+            final status = _mapOrderStatusToUi(statusRaw);
+
+            return PurchaseHistory(
+              id: orderNumber,
+              date: date,
+              total: total,
+              status: status,
+              items: itemsCount,
+            );
+          }).toList();
+        }
+      }
+
+      return [];
+    } on DioException catch (e) {
+      debugPrint('Gagal load orders: ${e.response?.data ?? e.message}');
+      return [];
+    } catch (e) {
+      debugPrint('Unexpected error loading orders: $e');
+      return [];
+    }
+  }
+
+  String _mapOrderStatusToUi(String status) {
+    switch (status) {
+      case 'Pending':
+        return 'Awaiting Payment';
+      case 'Processing':
+        return 'Processing';
+      case 'Shipped':
+        return 'Shipped';
+      case 'Completed':
+        return 'Delivered';
+      case 'Cancelled':
+        return 'Cancelled';
+      default:
+        return status;
     }
   }
 }
