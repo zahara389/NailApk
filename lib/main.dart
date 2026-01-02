@@ -145,9 +145,6 @@ class _AppRouterState extends State<AppRouter> {
 
   // ================= NAVIGATION =================
   void navigate(String view, {dynamic data}) async {
-    if (view == 'Home' || view == 'AllProducts') {
-      await _loadProducts();
-    }
     if (view == 'Cart' || view == 'Checkout') {
       await _loadCart();
     }
@@ -264,8 +261,6 @@ class _AppRouterState extends State<AppRouter> {
     navigate: navigate,
   );
 
-<<<<<<< HEAD
-=======
       case 'PurchaseHistory':
         return PurchaseHistoryScreen(
           goBack: goBack,
@@ -282,7 +277,6 @@ class _AppRouterState extends State<AppRouter> {
         }
         return const SizedBox.shrink();
 
->>>>>>> ad7404c624a6e1111bb82ec3f74c70d70b935e8f
       case 'Booking':
         return BookingScreen(
           goBack: goBack,
