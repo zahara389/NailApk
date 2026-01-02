@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // 4. Pindah ke Home
       widget.navigate('Home');
     } else {
-      _showError("Username atau Password salah!");
+      _showError("Login gagal. Cek koneksi & server API, lalu coba lagi.");
     }
   }
 
