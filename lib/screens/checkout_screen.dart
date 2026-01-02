@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:gal/gal.dart';
 import '../config.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -59,31 +56,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _downloadQris() async {
     try {
-      // Request permission only where it matters.
-      // On Android 10+ saving to MediaStore typically doesn't require storage permission.
-      if (Platform.isAndroid) {
-        await Permission.storage.request();
-      } else if (Platform.isIOS) {
-        await Permission.photosAddOnly.request();
-      }
-
       final byteData = await rootBundle.load('assets/images/qris-code.jpg');
-      final Uint8List bytes = byteData.buffer.asUint8List();
-
-      final result = await ImageGallerySaver.saveImage(
-        bytes,
-        quality: 100,
-        name: 'qris-${DateTime.now().millisecondsSinceEpoch}',
-      );
-
-      final dynamic isSuccess = result is Map ? (result['isSuccess'] ?? result['success']) : null;
-      final bool ok = isSuccess == true;
-
+      await Gal.putImageBytes(byteData.buffer.asUint8List());
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(ok ? 'QRIS berhasil disimpan ke galeri.' : 'Gagal menyimpan QRIS.'),
-        ),
+        const SnackBar(content: Text('QRIS berhasil disimpan ke galeri.')),
       );
     } catch (_) {
       if (!mounted) return;
