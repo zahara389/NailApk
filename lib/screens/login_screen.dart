@@ -25,24 +25,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _passwordVisible = false;
   bool _isLoading = false;
-  bool _showApiSettings = false;
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _apiUrlController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Load persisted API URL override (if any) and prefill the input.
-    loadApiBaseUrlOverride().then((_) {
-      if (!mounted) return;
-      setState(() {
-        _apiUrlController.text = apiBaseUrlOverride ?? apiBaseUrl;
-      });
-    });
-  }
 
   // ===============================
   // HANDLE LOGIN (FIXED)
@@ -110,21 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
-    _apiUrlController.dispose();
     super.dispose();
-  }
-
-  Future<void> _saveApiUrl() async {
-    final raw = _apiUrlController.text.trim();
-    await setApiBaseUrlOverride(raw);
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('URL API disimpan: ${apiBaseUrlOverride ?? apiBaseUrl}'),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
   @override
@@ -225,43 +196,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
-                // API URL Settings (inline, minimal)
-                const SizedBox(height: 8),
-                Center(
-                  child: TextButton(
-                    onPressed: () => setState(() => _showApiSettings = !_showApiSettings),
-                    child: Text(
-                      _showApiSettings ? 'Tutup pengaturan URL API' : 'Ubah URL API',
-                      style: TextStyle(color: Colors.grey.shade600),
-                    ),
-                  ),
-                ),
-                if (_showApiSettings) ...[
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _apiUrlController,
-                    decoration: _inputDecoration('URL API (contoh: http://10.0.2.2:8000)', LucideIcons.link),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _saveApiUrl,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: customPink,
-                      minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Simpan URL API',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
