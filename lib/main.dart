@@ -145,6 +145,9 @@ class _AppRouterState extends State<AppRouter> {
 
   // ================= NAVIGATION =================
   void navigate(String view, {dynamic data}) async {
+    if (view == 'Home' || view == 'AllProducts') {
+      await _loadProducts();
+    }
     if (view == 'Cart' || view == 'Checkout') {
       await _loadCart();
     }
