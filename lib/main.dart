@@ -243,10 +243,6 @@ class _AppRouterState extends State<AppRouter> {
     navigate: navigate,
   );
 
-<<<<<<< HEAD
-=======
-
->>>>>>> db9ff26c6f967f9ff6ea9afafe23186ba9d4bc66
       case 'Booking':
         return BookingScreen(
           goBack: goBack,
