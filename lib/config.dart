@@ -16,7 +16,7 @@ const Color customPinkLight = Color(0xffffe0f0);
 
 // Android Emulator   : http://10.0.2.2:8000
 // iOS / Web / Desktop: http://127.0.0.1:8000
-const String apiBaseUrl = "http://127.0.0.1:8000";
+const String apiBaseUrl = "http://10.174.212.209:8000";
 
 // FULL API PATH
 const String apiPath = "$apiBaseUrl/api";

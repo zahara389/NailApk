@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 // Screens
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/register_screen.dart'; // ✅ PASTIKAN IMPORT INI ADA
 import 'screens/all_products_screen.dart';
 import 'screens/product_detail_screen.dart';
 import 'screens/shopping_cart_screen.dart';
@@ -134,6 +135,7 @@ class _AppRouterState extends State<AppRouter> {
 
   // ================= NAVIGATION =================
   void navigate(String view, {dynamic data}) async {
+    debugPrint("Navigating to: $view"); // Untuk memantau pergerakan halaman
     if (view == 'Cart' || view == 'Checkout') {
       await _loadCartFromApi();
     }
@@ -162,6 +164,13 @@ class _AppRouterState extends State<AppRouter> {
           },
           setUserName: (n) => setState(() => _userName = n),
           setUserAddress: (_) {},
+        );
+
+      // 🔥 FIX: TAMBAHKAN CASE REGISTER DI SINI
+      case 'Register':
+        return RegisterScreen(
+          navigate: navigate,
+          goBack: () => navigate('Login'),
         );
 
       case 'Home':
@@ -195,7 +204,6 @@ class _AppRouterState extends State<AppRouter> {
           handleAddToCart: _handleAddToCart,
         );
 
-      // ================= CART =================
       case 'Cart':
         return ShoppingCartScreen(
           goBack: () => navigate('Home'),
@@ -218,7 +226,6 @@ class _AppRouterState extends State<AppRouter> {
           },
         );
 
-      // ================= CHECKOUT =================
       case 'Checkout':
         return CheckoutScreen(
           goBack: () => navigate('Cart'),
@@ -228,7 +235,13 @@ class _AppRouterState extends State<AppRouter> {
         );
 
       default:
-        return const SizedBox.shrink();
+        // Jika view tidak ditemukan, lempar kembali ke Login
+        return LoginScreen(
+          navigate: navigate,
+          setIsLoggedIn: (v) => setState(() => _isLoggedIn = v),
+          setUserName: (n) => setState(() => _userName = n),
+          setUserAddress: (_) {},
+        );
     }
   }
 
@@ -238,6 +251,7 @@ class _AppRouterState extends State<AppRouter> {
       body: Stack(
         children: [
           _renderView(),
+          // Hanya tampilkan Bottom Nav di halaman utama aplikasi
           if (_currentView == 'Home' ||
               _currentView == 'AllProducts' ||
               _currentView == 'Cart')
