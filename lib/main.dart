@@ -88,7 +88,7 @@ class _AppRouterState extends State<AppRouter> {
 
   List<GalleryItem> _galleryItems = initialGalleryItems;
   GalleryItem? _selectedGalleryItem;
-  List<PurchaseHistory> _purchaseHistory = List.from(dummyPurchaseHistory);
+  List<PurchaseHistory> _purchaseHistory = [];
   List<Booking> _bookingHistory = List.from(dummyBookingHistory);
   List<NotificationItem> _notifications = List.from(dummyNotifications);
   List<Voucher> _vouchers = List.from(dummyVouchers);
@@ -115,6 +115,12 @@ class _AppRouterState extends State<AppRouter> {
     setState(() => _cart = items);
   }
 
+  Future<void> _loadPurchaseHistory() async {
+    final orders = await _apiService.fetchOrders();
+    if (!mounted) return;
+    setState(() => _purchaseHistory = orders);
+  }
+
   // ================= ADD TO CART =================
   Future<void> _handleAddToCart(Product product) async {
     await _cartService.addToCart(productId: product.id, quantity: 1);
@@ -123,17 +129,28 @@ class _AppRouterState extends State<AppRouter> {
 
   // ================= CHECKOUT =================
   Future<void> _handleCheckout() async {
-    await _cartService.checkout();
+    final itemsCount = _cart.length;
+    final newOrder = await _cartService.checkout(itemsCount: itemsCount);
+
     setState(() {
+      _purchaseHistory.insert(0, newOrder);
       _cart.clear();
-      navigate('OrderSuccess');
     });
+
+    // Sync dari server biar konsisten (dan dapat status/total terbaru kalau berubah)
+    await _loadPurchaseHistory();
+
+    navigate('OrderSuccess');
   }
 
   // ================= NAVIGATION =================
   void navigate(String view, {dynamic data}) async {
     if (view == 'Cart' || view == 'Checkout') {
       await _loadCart();
+    }
+
+    if (view == 'PurchaseHistory' || view == 'Account') {
+      await _loadPurchaseHistory();
     }
 
     setState(() {
@@ -167,6 +184,7 @@ class _AppRouterState extends State<AppRouter> {
             if (token != null) {
               _dio.options.headers['Authorization'] = 'Bearer $token';
               await _loadCart();
+              await _loadPurchaseHistory();
             }
             setState(() => _isLoggedIn = v);
           },
@@ -242,6 +260,22 @@ class _AppRouterState extends State<AppRouter> {
   return OrderSuccessScreen(
     navigate: navigate,
   );
+
+      case 'PurchaseHistory':
+        return PurchaseHistoryScreen(
+          goBack: goBack,
+          navigate: navigate,
+          purchaseHistory: _purchaseHistory,
+        );
+
+      case 'PurchaseDetail':
+        if (_navigationData is PurchaseHistory) {
+          return PurchaseDetailScreen(
+            goBack: goBack,
+            order: _navigationData as PurchaseHistory,
+          );
+        }
+        return const SizedBox.shrink();
 
       case 'Booking':
         return BookingScreen(
